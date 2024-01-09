@@ -4,15 +4,16 @@ provider "okta" {
 }
 
 locals {
-  logout_redirect_url = format("%s:%s", data.tfe_outputs.boundary_demo_init.values.boundary_url, "3000")
-  callback_url        = format("%s%s", data.tfe_outputs.boundary_demo_init.values.boundary_url, "/v1/auth-methods/oidc:authenticate:callback")
+  logout_redirect_url = format("%s:%s", data.terraform_remote_state.boundary_demo_init.outputs.boundary_url, "3000")
+  callback_url        = format("%s%s", data.terraform_remote_state.boundary_demo_init.outputs.boundary_url, "/v1/auth-methods/oidc:authenticate:callback")
+}
+
+resource "random_pet" "okta_password" {
+  length = 2
 }
 
 # Create the Okta OAuth App for Boundary
 resource "okta_app_oauth" "okta_app" {
-  lifecycle {
-    ignore_changes = [groups]
-  }
 
   label                     = "HCP Boundary Demo"
   type                      = "web"
@@ -35,7 +36,7 @@ resource "okta_user" "global_user" {
   last_name  = "User"
   login      = "global_user@boundary.lab"
   email      = "global_user@dev.null"
-  password                  = var.okta_user_password
+  password                  = random_pet.okta_password.id
   expire_password_on_create = false
 }
 
@@ -44,7 +45,7 @@ resource "okta_user" "pie_user" {
   last_name                 = "User"
   login                     = "pie_user@boundary.lab"
   email                     = "pie_user@dev.null"
-  password                  = var.okta_user_password
+  password                  = random_pet.okta_password.id
   expire_password_on_create = false
 }
 
@@ -68,7 +69,7 @@ resource "okta_user" "dev_user" {
   last_name                 = "User"
   login                     = "dev_user@boundary.lab"
   email                     = "dev_user@dev.null"
-  password                  = var.okta_user_password
+  password                  = random_pet.okta_password.id
   expire_password_on_create = false
 }
 
@@ -92,7 +93,7 @@ resource "okta_user" "it_user" {
   last_name                 = "User"
   login                     = "it_user@boundary.lab"
   email                     = "it_user@dev.null"
-  password                  = var.okta_user_password
+  password                  = random_pet.okta_password.id
   expire_password_on_create = false
 }
 
@@ -131,7 +132,7 @@ resource "boundary_auth_method_oidc" "oidc_auth_method" {
   claims_scopes        = ["email", "groups", "profile"]
   account_claim_maps   = ["nickname=name"]
   signing_algorithms   = ["RS256"]
-  api_url_prefix       = data.tfe_outputs.boundary_demo_init.values.boundary_url
+  api_url_prefix       = data.terraform_remote_state.boundary_demo_init.outputs.boundary_url
   is_primary_for_scope = true
 }
 

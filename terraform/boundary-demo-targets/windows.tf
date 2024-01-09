@@ -34,7 +34,7 @@ module "rdp-sec-group" {
     {
       rule        = "all-all"
       description = "Allow ingress from everything in HVN VPC for Vault Connectivity"
-      cidr_blocks = data.tfe_outputs.boundary_demo_init.values.hvn_cidr
+      cidr_blocks = data.terraform_remote_state.boundary_demo_init.outputs.hvn_cidr
     }
   ]
 }

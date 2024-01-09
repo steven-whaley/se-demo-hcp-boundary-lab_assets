@@ -1,32 +1,23 @@
 terraform {
   required_providers {
     aws = {
-      version = "4.67.0"
+      version = "5.31.0"
       source  = "hashicorp/aws"
     }
     hcp = {
       source  = "hashicorp/hcp"
-      version = "0.52.0"
+      version = "0.79.0"
     }
     boundary = {
       source  = "hashicorp/boundary"
-      version = "1.1.9"
-    }
-    tfe = {
-      version = "0.42.0"
+      version = "1.1.12"
     }
     vault = {
-      version = "3.14.0"
+      version = "3.23.0"
     }
     okta = {
       source  = "okta/okta"
-      version = "3.46.0"
-    }
-  }
-  cloud {
-    organization = "swhashi"
-    workspaces {
-      name = "boundary-demo-targets"
+      version = "4.6.3"
     }
   }
 }
@@ -38,15 +29,15 @@ provider "aws" {
 provider "tfe" {}
 
 provider "boundary" {
-  addr                   = data.tfe_outputs.boundary_demo_init.values.boundary_url
-  auth_method_id         = data.tfe_outputs.boundary_demo_init.values.boundary_admin_auth_method
-  auth_method_login_name = var.boundary_user
-  auth_method_password   = var.boundary_password
+  addr                   = data.terraform_remote_state.boundary_demo_init.outputs.boundary_url
+  auth_method_id         = data.terraform_remote_state.boundary_demo_init.outputs.boundary_admin_auth_method
+  auth_method_login_name = "admin"
+  auth_method_password   = data.terraform_remote_state.boundary_demo_init.outputs.boundary_admin_password
 }
 
 provider "vault" {
-  address   = data.tfe_outputs.boundary_demo_init.values.vault_pub_url
-  token     = data.tfe_outputs.boundary_demo_init.values.vault_token
+  address   = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
+  token     = data.terraform_remote_state.boundary_demo_init.outputs.vault_token
   namespace = "admin"
 }
 

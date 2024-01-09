@@ -19,7 +19,7 @@ resource "aws_instance" "k8s_cluster" {
     password = random_password.db_password.result, 
     vault_token = vault_token.read-key.client_token
     vault_namespace = vault_namespace.pie.path_fq
-    vault_url = data.tfe_outputs.boundary_demo_init.values.vault_priv_url
+    vault_url = data.terraform_remote_state.boundary_demo_init.outputs.vault_priv_url
     vault_ssh_mount = vault_mount.ssh.path
     } )
   tags = {
@@ -39,7 +39,7 @@ module "k8s-sec-group" {
   egress_cidr_blocks = ["0.0.0.0/0"]
   egress_rules       = ["all-all"]
 
-  ingress_cidr_blocks = [data.tfe_outputs.boundary_demo_init.values.hvn_cidr]
+  ingress_cidr_blocks = [data.terraform_remote_state.boundary_demo_init.outputs.hvn_cidr]
   ingress_rules       = ["all-all"]
 
   ingress_with_source_security_group_id = [

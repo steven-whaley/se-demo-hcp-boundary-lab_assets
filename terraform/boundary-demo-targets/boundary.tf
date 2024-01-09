@@ -1,35 +1,47 @@
-##### Set up AWS user for Boundary Dynamic Host Sets ####
-##### This configuration is specific to Hashicorp AWS Sandbox accounts #####
-##### If you are running this in your own AWS account with full rights to create IAM users and policies then you will want to change this ######
-
-locals {
-  my_email = split("/", data.aws_caller_identity.current.arn)[2]
-}
-
 resource "time_sleep" "wait_60_sec" {
-  depends_on      = [aws_iam_access_key.boundary_dynamic_host_catalog]
+  depends_on      = [aws_iam_access_key.boundary_user]
   create_duration = "60s"
 }
 
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
-resource "aws_iam_user" "boundary_dynamic_host_catalog" {
-  name                 = "demo-${local.my_email}-bdhc"
-  permissions_boundary = data.aws_iam_policy.demo_user_permissions_boundary.arn
+resource "aws_iam_user" "boundary_user" {
+  name                 = "instruqt-boundary-user"
   force_destroy        = true
 }
 
-resource "aws_iam_user_policy_attachment" "boundary_dynamic_host_catalog" {
-  user       = aws_iam_user.boundary_dynamic_host_catalog.name
-  policy_arn = data.aws_iam_policy.demo_user_permissions_boundary.arn
+resource "aws_iam_policy" "boundary_policy" {
+  name        = "boundary_policy"
+  path        = "/"
+  description = "Policy for the Boundary IAM user to do Dynamic Host Discovery and access S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:DescribeInstances",
+          "s3:*"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
 }
+
+resource "aws_iam_user_policy_attachment" "boundary_user_policy" {
+  user       = aws_iam_user.boundary_user.name
+  policy_arn = aws_iam_policy.boundary_policy.arn
+}
+
+
 
 # Generate some secrets to pass in to the Boundary configuration.
 # WARNING: These secrets are not encrypted in the state file. Ensure that you do not commit your state file!
-resource "aws_iam_access_key" "boundary_dynamic_host_catalog" {
-  user = aws_iam_user.boundary_dynamic_host_catalog.name
+resource "aws_iam_access_key" "boundary_user" {
+  user = aws_iam_user.boundary_user.name
 }
 
-##### End of the Hashicorp Sandbox specific configuration #####
 
 ##### PIE Org Resources #####
 
@@ -115,7 +127,7 @@ resource "boundary_credential_store_vault" "pie_vault" {
   name        = "PIE Vault"
   description = "PIE Vault Credential Store"
   namespace   = "admin/${vault_namespace.pie.path_fq}"
-  address     = data.tfe_outputs.boundary_demo_init.values.vault_pub_url
+  address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-pie.client_token
   scope_id    = boundary_scope.pie_aws_project.id
 }
@@ -212,7 +224,7 @@ resource "boundary_credential_store_vault" "dev_vault" {
   name        = "dev_vault"
   description = "Dev Vault Credential Store"
   namespace   = "admin/${vault_namespace.dev.path_fq}"
-  address     = data.tfe_outputs.boundary_demo_init.values.vault_pub_url
+  address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-dev.client_token
   scope_id    = boundary_scope.dev_aws_project.id
 }
@@ -262,8 +274,8 @@ resource "boundary_host_catalog_plugin" "it_dynamic_catalog" {
   })
 
   secrets_json = jsonencode({
-    "access_key_id"     = aws_iam_access_key.boundary_dynamic_host_catalog.id,
-    "secret_access_key" = aws_iam_access_key.boundary_dynamic_host_catalog.secret
+    "access_key_id"     = aws_iam_access_key.boundary_user.id,
+    "secret_access_key" = aws_iam_access_key.boundary_user.secret
   })
 }
 
@@ -319,8 +331,8 @@ resource "boundary_storage_bucket" "pie_session_recording_bucket" {
   })
 
   secrets_json = jsonencode({
-    "access_key_id"     = aws_iam_access_key.boundary_dynamic_host_catalog.id,
-    "secret_access_key" = aws_iam_access_key.boundary_dynamic_host_catalog.secret
+    "access_key_id"     = aws_iam_access_key.boundary_user.id,
+    "secret_access_key" = aws_iam_access_key.boundary_user.secret
   })
   worker_filter = "\"${var.region}\" in \"/tags/region\""
 }

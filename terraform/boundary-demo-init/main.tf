@@ -15,7 +15,7 @@ resource "hcp_project" "project" {
 resource "hcp_boundary_cluster" "boundary-demo" {
   project_id = hcp_project.project.resource_id
   cluster_id = "instruqt-${random_pet.pet_name.id}"
-  username   = var.boundary_user
+  username   = "admin"
   password   = random_pet.random_password.id
   tier       = "PLUS"
 }

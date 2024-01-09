@@ -7,7 +7,7 @@ resource "aws_key_pair" "boundary_ec2_keys" {
 # Create VPC for AWS resources
 module "boundary-eks-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.14.2"
+  version = "5.5.0"
 
   name = "boundary-demo-eks-vpc"
 
@@ -18,14 +18,13 @@ module "boundary-eks-vpc" {
   public_subnets  = ["10.0.21.0/24", "10.0.22.0/24"]
 
   enable_nat_gateway   = true
-  single_nat_gateway   = true
-  enable_dns_hostnames = true
- 
+  enable_dns_hostnames = true 
 }
 
 ### Create peering connection to Vault HVN 
 resource "hcp_aws_network_peering" "vault" {
-  hvn_id          = data.tfe_outputs.boundary_demo_init.values.hvn_id
+  project_id = data.terraform_remote_state.boundary_demo_init.outputs.hcp_project_id
+  hvn_id = data.terraform_remote_state.boundary_demo_init.outputs.hvn_id
   peering_id      = "boundary-demo-cluster"
   peer_vpc_id     = module.boundary-eks-vpc.vpc_id
   peer_account_id = module.boundary-eks-vpc.vpc_owner_id
@@ -55,7 +54,7 @@ resource "aws_vpc_peering_connection_options" "dns" {
 }
 
 resource "hcp_hvn_route" "hcp_vault" {
-  hvn_link         = data.tfe_outputs.boundary_demo_init.values.hvn_self_link
+  hvn_link         = data.terraform_remote_state.boundary_demo_init.outputs.hvn_self_link
   hvn_route_id     = "vault-to-internal-clients"
   destination_cidr = module.boundary-eks-vpc.vpc_cidr_block
   target_link      = hcp_aws_network_peering.vault.self_link
@@ -67,7 +66,7 @@ resource "aws_route" "vault" {
     for idx, rt_id in module.boundary-eks-vpc.private_route_table_ids : idx => rt_id
   }
   route_table_id            = each.value
-  destination_cidr_block    = data.tfe_outputs.boundary_demo_init.values.hvn_cidr
+  destination_cidr_block    = data.terraform_remote_state.boundary_demo_init.outputs.hvn_cidr
   vpc_peering_connection_id = hcp_aws_network_peering.vault.provider_peering_id
 }
 
@@ -86,7 +85,7 @@ data "aws_iam_policy_document" "ssm_write_policy" {
 
 resource "aws_iam_policy" "ssm_policy" {
   name        = "boundary-demo-ssm-policy"
-  description = "Policy used in Boundary demo to kube info to SSM"
+  description = "Policy used in Boundary demo to write kube info to SSM"
   policy      = data.aws_iam_policy_document.ssm_write_policy.json
 }
 

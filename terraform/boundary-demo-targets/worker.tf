@@ -8,7 +8,7 @@ resource "boundary_worker" "hcp_pki_worker" {
 
 locals {
   boundary_worker_config = <<-WORKER_CONFIG
-    hcp_boundary_cluster_id = "${split(".", split("//", data.tfe_outputs.boundary_demo_init.values.boundary_url)[1])[0]}"
+    hcp_boundary_cluster_id = "${split(".", split("//", data.terraform_remote_state.boundary_demo_init.outputs.boundary_url)[1])[0]}"
     listener "tcp" {
       purpose = "proxy"
       address = "0.0.0.0"

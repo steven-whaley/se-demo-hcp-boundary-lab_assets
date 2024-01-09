@@ -41,11 +41,11 @@ data "aws_ami" "windows" {
   }
 }
 
-data "terraform_remote_state" "boundary-demo-init" {
+data "terraform_remote_state" "boundary_demo_init" {
   backend = "local"
   
   config = {
-    path = "../boundary-demo-init/terraform.tfstate.d/boundary-demo-init"
+    path = "../boundary-demo-init/terraform.tfstate"
   }
 }
 
