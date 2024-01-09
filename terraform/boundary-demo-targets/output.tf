@@ -22,3 +22,8 @@ output "it_host_set_id" {
   description = "The ID of the dynamic host set plugin used for the IT hosts"
   value = boundary_host_set_plugin.it_set.id
 }
+
+output "okta_password" {
+  description = "The password for the Okta users created by Terraform"
+  value = random_pet.okta_password.id
+}
