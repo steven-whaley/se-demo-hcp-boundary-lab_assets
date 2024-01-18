@@ -15,11 +15,6 @@ variable "public_key" {
   description = "The public key to use when creating the EC2 key pair to access AWS systems"
 }
 
-variable "okta_baseurl" {
-  description = "The base url for the Okta organization used for OIDC integration. Probably okta.com"
-  type        = string
-}
-
 variable "okta_org_name" {
   description = "The organization name for the Okta organization use for OIDC integration i.e. dev-32201783"
   type        = string

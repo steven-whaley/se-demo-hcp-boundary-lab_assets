@@ -1,6 +1,6 @@
 provider "okta" {
   org_name = var.okta_org_name
-  base_url = var.okta_baseurl
+  base_url = "okta.com"
 }
 
 locals {
