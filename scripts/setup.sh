@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+
+export TF_BASE="$(pwd)/terraform"
+echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+
+
 if [[ -f ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh ]]; then
   rm ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
   touch ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
@@ -14,10 +19,8 @@ if ! grep -E "^source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh$" ~/.bashrc > /dev/nu
   echo "source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh" >> ~/.bashrc
 fi
 
-if [[ -z "$TF_BASE" ]]; then
-  export TF_BASE="$(pwd)/terraform"
-  echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
-fi
+export TF_BASE="$(pwd)/terraform"
+echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 default_setup_info_text=\
 "This track sets up an HCP Boundary cluster and an AWS VPC with the following components
@@ -33,8 +36,6 @@ to contain the Boundary and Vault clusters.  This project and the associated res
 the Instruqt environment is terminated.  You will need to provide HCP Credentials with Admin rights so that the project 
 can be created.  
 "
-
-boundary_cluster_info_success=false
 
 echo "$default_setup_info_text"
 echo ""
@@ -58,7 +59,11 @@ echo "Please provide your Okta Org Name: "
 read -s okta_org_name
 echo "export TF_VAR_okta_org_name=\"$okta_org_name\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh 
 
+echo "export TF_VAR_public_key=\"$(cat ~/.ssh/id_rsa.pub)\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+
 source .bashrc
+
+
 
 cd ${TF_BASE}/boundary-demo-init
 terraform init

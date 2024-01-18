@@ -128,7 +128,7 @@ resource "boundary_auth_method_oidc" "oidc_auth_method" {
   scope_id             = "global"
   client_id            = okta_app_oauth.okta_app.client_id
   client_secret        = okta_app_oauth.okta_app.client_secret
-  issuer               = format("%s%s.%s", "https://", var.okta_org_name, var.okta_baseurl)
+  issuer               = format("%s%s.%s", "https://", var.okta_org_name, "okta.com")
   claims_scopes        = ["email", "groups", "profile"]
   account_claim_maps   = ["nickname=name"]
   signing_algorithms   = ["RS256"]
