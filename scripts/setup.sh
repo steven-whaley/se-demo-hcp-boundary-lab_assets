@@ -41,7 +41,7 @@ echo "$default_setup_info_text"
 echo ""
 
 echo "Please provide your HCP Client ID: "
-read -s hcp_client_id
+read hcp_client_id
 echo "export HCP_CLIENT_ID=\"$hcp_client_id\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 echo ""
 
@@ -56,16 +56,39 @@ echo "export OKTA_API_TOKEN=\"$okta_api_token\"" >> ~/.${INSTRUQT_PARTICIPANT_ID
 echo ""
 
 echo "Please provide your Okta Org Name: "
-read -s okta_org_name
+read okta_org_name
 echo "export TF_VAR_okta_org_name=\"$okta_org_name\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh 
 
 echo "export TF_VAR_public_key=\"$(cat ~/.ssh/id_rsa.pub)\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 source .bashrc
 
-
-
 cd ${TF_BASE}/boundary-demo-init
 terraform init
 terraform apply -auto-approve
 
+cd ${TF_BASE}/boundary-demo-targets
+terraform init
+terraform apply -auto-approve
+
+BOUNDARY_URL=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_url`
+BOUNDARY_ADMIN_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_admin_password`
+OKTA_USER_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-targets/terraform.tfstate" -raw okta_password`
+
+echo ""
+echo "----------------------"
+echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
+echo "The Boundary Cluster admin user is: admin"
+echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
+echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
+echo "----------------------"
+echo ""
+
+sleep 360
+echo "Sleeping for 5 minutes to allow the Windows Domain Controller to complete it's setup."
+
+cd ${TF_BASE}/boundary-demo-ad-secrets
+terraform init
+terraform apply -auto-approve
+
+echo "The deployment is complete, you can now begin testing using the Boundary Client and Boundary Desktop Client on your local system"

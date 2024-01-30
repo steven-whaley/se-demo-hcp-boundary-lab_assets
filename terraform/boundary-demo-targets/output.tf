@@ -13,9 +13,39 @@ output "dc_ip_address" {
   value = aws_instance.rdp-target.private_ip
 }
 
+output "okta_password" {
+  description = "The password for the Okta users created by Terraform"
+  value = random_pet.okta_password.id
+}
+
+output "pie_org_id" {
+  description = "The ORG ID of the PIE Project"
+  value = boundary_scope.pie_org.id
+}
+
+output "pie_project_id" {
+  description = "The project ID of the PIE AWS project"
+  value = boundary_scope.pie_aws_project.id
+}
+
+output "it_org_id" {
+  description = "The ORG ID of the IT Project"
+  value = boundary_scope.it_org.id
+}
+
 output "it_project_id" {
   description = "The project ID of the IT AWS project"
   value = boundary_scope.it_aws_project.id
+}
+
+output "dev_org_id" {
+  description = "The ORG ID of the DEV Project"
+  value = boundary_scope.dev_org.id
+}
+
+output "dev_project_id" {
+  description = "The project ID of the DEV AWS project"
+  value = boundary_scope.dev_aws_project.id
 }
 
 output "it_host_set_id" {
@@ -23,7 +53,5 @@ output "it_host_set_id" {
   value = boundary_host_set_plugin.it_set.id
 }
 
-output "okta_password" {
-  description = "The password for the Okta users created by Terraform"
-  value = random_pet.okta_password.id
-}
+
+

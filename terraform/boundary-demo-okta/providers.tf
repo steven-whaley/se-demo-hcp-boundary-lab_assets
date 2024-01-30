@@ -1,21 +1,14 @@
 terraform {
   required_providers {
-    aws = {
-      version = "5.31.0"
-      source  = "hashicorp/aws"
-    }
     boundary = {
       source  = "hashicorp/boundary"
       version = "1.1.12"
     }
-    vault = {
-      version = "3.23.0"
+    okta = {
+      source  = "okta/okta"
+      version = "4.6.3"
     }
   }
-}
-
-provider "aws" {
-  region = var.region
 }
 
 provider "boundary" {
@@ -23,10 +16,4 @@ provider "boundary" {
   auth_method_id         = data.terraform_remote_state.boundary_demo_init.outputs.boundary_admin_auth_method
   auth_method_login_name = "admin"
   auth_method_password   = data.terraform_remote_state.boundary_demo_init.outputs.boundary_admin_password
-}
-
-provider "vault" {
-  address   = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
-  token     = data.terraform_remote_state.boundary_demo_init.outputs.vault_token
-  namespace = "admin"
 }

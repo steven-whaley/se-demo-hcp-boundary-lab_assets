@@ -9,7 +9,7 @@ resource "vault_ldap_secret_backend" "ad" {
   path         = "boundary-ad"
   binddn       = "Administrator@Boundary.lab"
   bindpass     = var.admin_pass
-  url          = "ldaps://${data.tfe_outputs.boundary_demo_targets.values.dc_ip_address}"
+  url          = "ldaps://${data.terraform_remote_state.boundary_demo_targets.outputs.dc_ip_address}"
   insecure_tls = "true"
   userdn       = "CN=Users,DC=Boundary,DC=lab"
   schema       = "ad"
@@ -96,9 +96,9 @@ resource "boundary_credential_store_vault" "it_vault" {
   name        = "it_vault"
   description = "IT Vault Credential Store"
   namespace   = "admin/${vault_namespace.it.path_fq}"
-  address     = data.tfe_outputs.boundary_demo_init.values.vault_pub_url
+  address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-it.client_token
-  scope_id    = data.tfe_outputs.boundary_demo_targets.values.it_project_id
+  scope_id    = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id
 }
 
 resource "boundary_credential_library_vault" "domain_admin" {
@@ -115,12 +115,12 @@ resource "boundary_target" "it-rdp-target-admin" {
   type                     = "tcp"
   name                     = "it-rdp-target-admin"
   description              = "Connect to RDP target with Vault brokered domain admin credentials"
-  scope_id                 = data.tfe_outputs.boundary_demo_targets.values.it_project_id
+  scope_id                 = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id
   session_connection_limit = -1
   default_port             = 3389
   default_client_port = 53389
   host_source_ids = [
-    data.tfe_outputs.boundary_demo_targets.values.it_host_set_id
+    data.terraform_remote_state.boundary_demo_targets.outputs.it_host_set_id
   ]  
   egress_worker_filter = "\"${var.region}\" in \"/tags/region\""
   brokered_credential_source_ids = [
