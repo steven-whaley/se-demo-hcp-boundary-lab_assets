@@ -13,11 +13,6 @@ output "dc_ip_address" {
   value = aws_instance.rdp-target.private_ip
 }
 
-output "okta_password" {
-  description = "The password for the Okta users created by Terraform"
-  value = random_pet.okta_password.id
-}
-
 output "pie_org_id" {
   description = "The ORG ID of the PIE Project"
   value = boundary_scope.pie_org.id

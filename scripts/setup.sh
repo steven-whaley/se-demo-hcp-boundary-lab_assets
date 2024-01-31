@@ -50,14 +50,35 @@ read -s hcp_client_secret
 echo "export HCP_CLIENT_SECRET=\"$hcp_client_secret\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 echo ""
 
-echo "Please provide your Okta API Token: "
-read -s okta_api_token
-echo "export OKTA_API_TOKEN=\"$okta_api_token\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
-echo ""
+use_okta="failed"
+while [ "$use_okta" = "failed" ]
+do
+  echo "Do you want to configure Boundary to use Okta OIDC for Authentication? y/n"
+  read use_okta
+  case $use_okta in
+    y) 
+      echo "export TF_VAR_use_okta=\"true\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+      ;;
+    n) 
+      echo "export TF_VAR_use_okta=\"false\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+      ;;
+    *) 
+      use_okta=failed; echo "Please enter either y or n when answering the question."
+      echo ""
+      ;;
+  esac
+done
 
-echo "Please provide your Okta Org Name: "
-read okta_org_name
-echo "export TF_VAR_okta_org_name=\"$okta_org_name\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh 
+if [[ "$use_okta" == "y" ]]; then
+  echo "Please provide your Okta API Token: "
+  read -s okta_api_token
+  echo "export OKTA_API_TOKEN=\"$okta_api_token\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+  echo ""
+
+  echo "Please provide your Okta Org Name: "
+  read okta_org_name
+  echo "export TF_VAR_okta_org_name=\"$okta_org_name\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh 
+fi
 
 echo "export TF_VAR_public_key=\"$(cat ~/.ssh/id_rsa.pub)\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
@@ -71,16 +92,27 @@ cd ${TF_BASE}/boundary-demo-targets
 terraform init
 terraform apply -auto-approve
 
+if [[ "$use_okta" == "y" ]]; then
+  cd ${TF_BASE}/boundary-demo-okta
+  terraform init
+  terraform apply -auto-approve
+fi
+
 BOUNDARY_URL=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_url`
 BOUNDARY_ADMIN_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_admin_password`
-OKTA_USER_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-targets/terraform.tfstate" -raw okta_password`
+if [[ "$use_okta" == "y" ]]; then
+  OKTA_USER_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-okta/terraform.tfstate" -raw okta_password`
+fi
 
 echo ""
 echo "----------------------"
 echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
 echo "The Boundary Cluster admin user is: admin"
 echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
-echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
+
+if [[ "$use_okta" == "y" ]]; then
+  echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
+fi
 echo "----------------------"
 echo ""
 

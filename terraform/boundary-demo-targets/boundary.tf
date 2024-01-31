@@ -66,7 +66,7 @@ resource "boundary_scope" "pie_aws_project" {
 # Create targets in PIE AWS project
 resource "boundary_target" "pie-k8s-target" {
   type                     = "tcp"
-  name                     = "k8s-target"
+  name                     = "pie-k8s-target"
   description              = "connect to the k8s Target with a token from the Vault K8s secret engine"
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
@@ -81,7 +81,7 @@ resource "boundary_target" "pie-k8s-target" {
 
 resource "boundary_target" "pie-ssh-target" {
   type                     = "tcp"
-  name                     = "ssh-target"
+  name                     = "pie-ssh-target"
   description              = "Connect to the SSH target with a user supplied SSH key"
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
@@ -91,6 +91,7 @@ resource "boundary_target" "pie-ssh-target" {
 }
 
 resource "boundary_target" "pie-ssh-cert-target" {
+  count = var.use_okta ? 1 : 0
   type                     = "ssh"
   name                     = "pie-ssh-cert-target"
   description              = "Connect to the SSH server using OIDC username.  Only works for OIDC users."

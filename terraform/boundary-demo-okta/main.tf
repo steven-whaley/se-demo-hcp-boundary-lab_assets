@@ -154,8 +154,8 @@ resource "boundary_role" "okta_dev_role" {
     "id=*;type=host;actions=list,read",
     "id=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = boundary_scope.dev_org.id
-  grant_scope_id = boundary_scope.dev_aws_project.id
+  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.dev_org_id
+  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.dev_project_id
 }
 
 # Create the managed group in boundary for PIE users
@@ -176,8 +176,8 @@ resource "boundary_role" "okta_pie_role" {
     "id=*;type=host;actions=list,read",
     "id=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = boundary_scope.pie_org.id
-  grant_scope_id = boundary_scope.pie_aws_project.id
+  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.pie_org_id
+  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.pie_project_id
 }
 
 # Create the managed group in boundary for IT users
@@ -198,6 +198,6 @@ resource "boundary_role" "okta_it_role" {
     "id=*;type=host;actions=list,read",
     "id=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = boundary_scope.it_org.id
-  grant_scope_id = boundary_scope.it_aws_project.id
+  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.it_org_id
+  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id
 }
