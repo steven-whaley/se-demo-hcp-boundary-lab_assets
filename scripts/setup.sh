@@ -87,19 +87,29 @@ source .bashrc
 cd ${TF_BASE}/boundary-demo-init
 terraform init
 terraform apply -auto-approve
+if [ $? -eq 0 ]; then
+  touch .init-success
+fi
 
 cd ${TF_BASE}/boundary-demo-targets
 terraform init
 terraform apply -auto-approve
+if [ $? -eq 0 ]; then
+  touch .targets-success
+fi
 
 if [[ "$use_okta" == "y" ]]; then
   cd ${TF_BASE}/boundary-demo-okta
   terraform init
   terraform apply -auto-approve
+  if [ $? -eq 0 ]; then
+    touch .okta-success
+  fi
 fi
 
 BOUNDARY_URL=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_url`
 BOUNDARY_ADMIN_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_admin_password`
+BOUNDARY_PASSWORD_AUTH_METHOD=`terraform output -state="${TF_BASE}/boundary-demo-init/terraform.tfstate" -raw boundary_admin_auth_method`
 if [[ "$use_okta" == "y" ]]; then
   OKTA_USER_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-okta/terraform.tfstate" -raw okta_password`
 fi
@@ -109,6 +119,7 @@ echo "----------------------"
 echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
 echo "The Boundary Cluster admin user is: admin"
 echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
+echo "The Boundary Cluster password auth method ID is: ${BOUNDARY_PASSWORD_AUTH_METHOD}"
 
 if [[ "$use_okta" == "y" ]]; then
   echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
@@ -124,6 +135,9 @@ sleep 360
 cd ${TF_BASE}/boundary-demo-ad-secrets
 terraform init
 terraform apply -auto-approve
+if [ $? -eq 0 ]; then
+  touch .ldap-success
+fi
 
 echo "The deployment is complete, should now have an additional Windows RDP target available with credentials brokered from Vault."
 echo ""
@@ -131,9 +145,24 @@ echo "----------------------"
 echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
 echo "The Boundary Cluster admin user is: admin"
 echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
+echo "The Boundary Cluster password auth method ID is: ${BOUNDARY_PASSWORD_AUTH_METHOD}"
 
 if [[ "$use_okta" == "y" ]]; then
   echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
 fi
 echo "----------------------"
-echo "
+
+echo "Set the Boundary Cluster Address on your CLI"
+echo "export BOUNDARY_ADDR=${BOUNDARY_URL}"
+echo ""
+echo "To log in as the admin user run:"
+echo "boundary authenticate password -auth-method-id ${BOUNDARY_PASSWORD_AUTH_METHOD}"
+echo "The local admin password is ${BOUNDARY_ADMIN_PASSWORD}"
+echo ""
+if [[ "$use_okta" == "y" ]]; then
+  echo "To Log in as an Okta user run:"
+  echo "boundary authenticate"
+  echo "Valid Okta users are global_user@boundary.lab, pie_user@boundary.lab, dev_user@boundary.lab, and it_user@boundary.lab"
+  echo "The Okta user password is ${OKTA_USER_PASSWORD}"
+fi
+
