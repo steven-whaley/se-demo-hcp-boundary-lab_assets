@@ -15,10 +15,6 @@ terraform {
     vault = {
       version = "3.23.0"
     }
-    okta = {
-      source  = "okta/okta"
-      version = "4.6.3"
-    }
   }
 }
 

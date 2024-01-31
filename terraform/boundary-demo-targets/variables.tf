@@ -15,7 +15,8 @@ variable "public_key" {
   description = "The public key to use when creating the EC2 key pair to access AWS systems"
 }
 
-variable "okta_org_name" {
-  description = "The organization name for the Okta organization use for OIDC integration i.e. dev-32201783"
-  type        = string
+variable "use_okta" {
+  description = "Variable that controls whether we are using Okta as part of the demo or not"
+  type = bool
+  default = false
 }

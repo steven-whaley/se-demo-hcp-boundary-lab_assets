@@ -116,11 +116,24 @@ fi
 echo "----------------------"
 echo ""
 
+echo "Setting up the LDAP secrets engine to provide dynamic AD credentials to connect to the Windows target."
+echo "The script will sleep for 5 minutes while waiting for Domain Controller promotion and Certificate Services setup to complete."
+echo "Your Boundary environment is ready and you can log in and begin connecting to resources while you wait for the last target to become available."
 sleep 360
-echo "Sleeping for 5 minutes to allow the Windows Domain Controller to complete it's setup."
 
 cd ${TF_BASE}/boundary-demo-ad-secrets
 terraform init
 terraform apply -auto-approve
 
-echo "The deployment is complete, you can now begin testing using the Boundary Client and Boundary Desktop Client on your local system"
+echo "The deployment is complete, should now have an additional Windows RDP target available with credentials brokered from Vault."
+echo ""
+echo "----------------------"
+echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
+echo "The Boundary Cluster admin user is: admin"
+echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
+
+if [[ "$use_okta" == "y" ]]; then
+  echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
+fi
+echo "----------------------"
+echo "
