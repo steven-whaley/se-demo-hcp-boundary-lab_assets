@@ -2,11 +2,6 @@
 
 set -euo pipefail
 
-
-export TF_BASE="$(pwd)/se-demo-hcp-boundary-lab_assets/terraform"
-echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
-
-
 if [[ -f ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh ]]; then
   rm ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
   touch ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
@@ -18,6 +13,9 @@ if ! grep -E "^source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh$" ~/.bashrc > /dev/nu
   echo "" >> ~/.bashrc
   echo "source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh" >> ~/.bashrc
 fi
+
+export TF_BASE="$(pwd)/se-demo-hcp-boundary-lab_assets/terraform"
+echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 default_setup_info_text=\
 "This track sets up an HCP Boundary cluster and an AWS VPC with the following components

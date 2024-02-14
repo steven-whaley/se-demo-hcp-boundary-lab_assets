@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh >/dev/null 2>&1
 
 if [[ "$TF_VAR_use_okta" == "true"]]; then
     cd ${TF_BASE}/boundary-demo-okta
