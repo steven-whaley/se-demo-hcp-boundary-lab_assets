@@ -131,7 +131,7 @@ cd ${TF_BASE}/boundary-demo-ad-secrets
 terraform init
 terraform apply -auto-approve
 if [ $? -eq 0 ]; then
-  touch ${HOME}.ldap-success
+  touch ${HOME}/.ldap-success
 fi
 
 echo "The deployment is complete, should now have an additional Windows RDP target available with credentials brokered from Vault."
