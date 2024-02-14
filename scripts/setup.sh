@@ -3,7 +3,7 @@
 set -euo pipefail
 
 
-export TF_BASE="$(pwd)/terraform"
+export TF_BASE="$(pwd)/se-demo-hcp-boundary-lab_assets/terraform"
 echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 
@@ -18,9 +18,6 @@ if ! grep -E "^source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh$" ~/.bashrc > /dev/nu
   echo "" >> ~/.bashrc
   echo "source ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh" >> ~/.bashrc
 fi
-
-export TF_BASE="$(pwd)/terraform"
-echo "export TF_BASE=\"$TF_BASE\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 default_setup_info_text=\
 "This track sets up an HCP Boundary cluster and an AWS VPC with the following components
@@ -88,14 +85,14 @@ cd ${TF_BASE}/boundary-demo-init
 terraform init
 terraform apply -auto-approve
 if [ $? -eq 0 ]; then
-  touch .init-success
+  touch ${HOME}/.init-success
 fi
 
 cd ${TF_BASE}/boundary-demo-targets
 terraform init
 terraform apply -auto-approve
 if [ $? -eq 0 ]; then
-  touch .targets-success
+  touch ${HOME}/.targets-success
 fi
 
 if [[ "$use_okta" == "y" ]]; then
@@ -103,7 +100,7 @@ if [[ "$use_okta" == "y" ]]; then
   terraform init
   terraform apply -auto-approve
   if [ $? -eq 0 ]; then
-    touch .okta-success
+    touch ${HOME}/.okta-success
   fi
 fi
 
@@ -136,7 +133,7 @@ cd ${TF_BASE}/boundary-demo-ad-secrets
 terraform init
 terraform apply -auto-approve
 if [ $? -eq 0 ]; then
-  touch .ldap-success
+  touch ${HOME}.ldap-success
 fi
 
 echo "The deployment is complete, should now have an additional Windows RDP target available with credentials brokered from Vault."
