@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir -p ~/.k8s-credentials
-nohup boundary connect -target-id  $1  -format=json | tee ~/.k8s-credentials/boundary-kube.json  > /dev/null &
+nohup boundary connect -target-scope-name=$1 -target-name=$2 -format=json | tee ~/.k8s-credentials/boundary-kube.json  > /dev/null &
 
 sleep 2
 
