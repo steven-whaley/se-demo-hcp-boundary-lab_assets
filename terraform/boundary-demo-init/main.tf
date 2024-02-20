@@ -58,7 +58,7 @@ module "vault-security-group" {
   vpc_id      = module.boundary-demo-vpc.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
-  ingress_rules       = ["http-80-tcp"]
+  ingress_rules       = ["http-80-tcp", "ssh-tcp"]
 
   ingress_with_cidr_blocks = [
     {
@@ -85,15 +85,15 @@ module "vault-security-group" {
 
 #Create Vault server EC2 instance with AWS Linux AMI
 resource "aws_instance" "vault-server" {
-  ami           = data.aws_ami.vault_ami.id
+  ami           = data.aws_ami.aws_linux_hvm2.id
   instance_type = "t3.micro"
 
   key_name                    = aws_key_pair.vault_key.key_name
   monitoring                  = true
-  subnet_id                   = module.vault-demo-vpc.public_subnets[0]
+  subnet_id                   = module.boundary-demo-vpc.public_subnets[0]
   associate_public_ip_address = true
   vpc_security_group_ids      = [module.vault-security-group.security_group_id]
-  user_data_base64            = base64encode(data.template_file.vault-init.rendered)
+  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id })
 
   tags = {
     Name = "vault-demo"

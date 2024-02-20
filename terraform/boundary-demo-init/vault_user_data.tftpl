@@ -5,7 +5,7 @@ echo Installing Vault
 sleep 30
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install vault-enterprise
+sudo yum install -y vault-1.15.5-1
 sudo yum -y install mysql jq
 
 # prevent memory from being swapped to disk without running the process as root
@@ -14,16 +14,73 @@ sudo setcap cap_ipc_lock=+ep /usr/bin/vault
 # create the vault.d directory in /etc
 sudo mkdir --parents /etc/vault.d
 
-# move the config files to their appropriate locations
-sudo mv /tmp/vault.hcl /etc/vault.d/vault.hcl
-sudo mv /tmp/vault.service /etc/systemd/system/vault.service
-sudo mv /tmp/vault.hclic /etc/vault.d/vault.hclic
+# Add Vault config file
+cat <<EOF > /etc/vault.d/vault.hcl
+ui = true
+license_path = "/etc/vault.d/vault.hclic"
+
+listener "tcp" {
+ address     = "0.0.0.0:8200"
+ tls_disable = "true"
+}
+
+storage "raft" {
+  path = "/home/vault/data"
+  node_id = "raft_node_1"
+}
+
+cluster_addr = "http://127.0.0.1:8201"
+api_addr = "http://127.0.0.1:8200"
+EOF
+
+cat <<EOF > /etc/systemd/system/vault.service
+[Unit]
+Description="HashiCorp Vault - A tool for managing secrets"
+Documentation=https://www.vaultproject.io/docs/
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty=/etc/vault.d/vault.hcl
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+User=vault
+Group=vault
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+SecureBits=keep-caps
+AmbientCapabilities=CAP_IPC_LOCK
+Capabilities=CAP_IPC_LOCK+ep
+CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+NoNewPrivileges=yes
+ExecStart=/usr/bin/vault server -config=/etc/vault.d/vault.hcl
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+StartLimitInterval=60
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# # move the config files to their appropriate locations
+# sudo mv /tmp/vault.hcl /etc/vault.d/vault.hcl
+# sudo mv /tmp/vault.service /etc/systemd/system/vault.service
+# sudo mv /tmp/vault.hclic /etc/vault.d/vault.hclic
 
 # give ownership of everything in the vault.d directory to the vault user
 sudo chown --recursive vault:vault /etc/vault.d
 
 # give read/write access to the vault.hcl file
 sudo chown 640 /etc/vault.d/vault.hcl
+sudo mkdir /home/vault
+sudo mkdir /home/vault/data
 sudo chown --recursive vault:vault /home/vault/
 
 
@@ -37,19 +94,14 @@ vault operator init >> /tmp/init.txt
 
 
 # Unseal Vault 
-count=1;
 
-cat /tmp/init.txt | while read line; do
-if (( $count <= 3 )); then
-    if [[ $line == *"Unseal Key"* ]]; then
-     IFS=':'
-     read -a strarr <<< "$line"
-     key="$${strarr[1]}"
-     vault operator unseal $key
-     ((count+=1))
-    fi
-fi
-done
+VAULT_INIT_OUTPUT=$(vault operator init -key-shares 1 -key-threshold 1 -format json)
+
+vault operator unseal $(echo $VAULT_INIT_OUTPUT | jq -r '.unseal_keys_b64[0]')
+
+echo "VAULT_ADDR=http://127.0.0.1:8200" > /etc/vault.d/vault.env
+
+echo "VAULT_TOKEN=$(echo $VAULT_INIT_OUTPUT | jq '.root_token')" >> /etc/vault.d/vault.env
 
 export VAULT_TOKEN=`grep "Initial Root Token" /tmp/init.txt | cut -d ":" -f2 | xargs` 
 
