@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# download and install vault
+echo Installing Vault
+sleep 30
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install vault-enterprise
+sudo yum -y install mysql jq
+
+# prevent memory from being swapped to disk without running the process as root
+sudo setcap cap_ipc_lock=+ep /usr/bin/vault
+
+# create the vault.d directory in /etc
+sudo mkdir --parents /etc/vault.d
+
+# move the config files to their appropriate locations
+sudo mv /tmp/vault.hcl /etc/vault.d/vault.hcl
+sudo mv /tmp/vault.service /etc/systemd/system/vault.service
+sudo mv /tmp/vault.hclic /etc/vault.d/vault.hclic
+
+# give ownership of everything in the vault.d directory to the vault user
+sudo chown --recursive vault:vault /etc/vault.d
+
+# give read/write access to the vault.hcl file
+sudo chown 640 /etc/vault.d/vault.hcl
+sudo chown --recursive vault:vault /home/vault/
+
+
+export VAULT_ADDR='http://127.0.0.1:8200'
+
+# enable and start the vault server
+sudo systemctl enable vault
+sudo systemctl start vault
+sleep 10 
+vault operator init >> /tmp/init.txt
+
+
+# Unseal Vault 
+count=1;
+
+cat /tmp/init.txt | while read line; do
+if (( $count <= 3 )); then
+    if [[ $line == *"Unseal Key"* ]]; then
+     IFS=':'
+     read -a strarr <<< "$line"
+     key="$${strarr[1]}"
+     vault operator unseal $key
+     ((count+=1))
+    fi
+fi
+done
+
+export VAULT_TOKEN=`grep "Initial Root Token" /tmp/init.txt | cut -d ":" -f2 | xargs` 
+
+cat <<EOF > /tmp/admin.hcl
+path "*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+EOF
+
+vault auth enable userpass
+vault policy write admin /tmp/admin.hcl
+vault write auth/userpass/users/terraform password=${vaultpass} token_policies=admin token_no_default_policy=true
+
+echo 'export VAULT_ADDR="http://127.0.0.1:8200"' >> /etc/profile.d/exports.sh
+chmod +x /etc/profile.d/exports.sh
