@@ -69,11 +69,6 @@ LimitMEMLOCK=infinity
 WantedBy=multi-user.target
 EOF
 
-# # move the config files to their appropriate locations
-# sudo mv /tmp/vault.hcl /etc/vault.d/vault.hcl
-# sudo mv /tmp/vault.service /etc/systemd/system/vault.service
-# sudo mv /tmp/vault.hclic /etc/vault.d/vault.hclic
-
 # give ownership of everything in the vault.d directory to the vault user
 sudo chown --recursive vault:vault /etc/vault.d
 
@@ -91,28 +86,23 @@ sudo systemctl enable vault
 sudo systemctl start vault
 sleep 10 
 
-# # Unseal Vault 
+# Unseal Vault 
 
-# VAULT_INIT_OUTPUT=$(vault operator init -key-shares 1 -key-threshold 1 -format json)
+VAULT_INIT_OUTPUT=$(vault operator init -key-shares 1 -key-threshold 1 -format json)
 
-# vault operator unseal $(echo $VAULT_INIT_OUTPUT | jq -r '.unseal_keys_b64[0]')
+vault operator unseal $(echo $VAULT_INIT_OUTPUT | jq -r '.unseal_keys_b64[0]')
 
-# echo "VAULT_ADDR=http://127.0.0.1:8200" > /etc/vault.d/vault.env
+echo "VAULT_ADDR=http://127.0.0.1:8200" > /etc/vault.d/vault.env
 
-# echo "VAULT_TOKEN=$(echo $VAULT_INIT_OUTPUT | jq '.root_token')" >> /etc/vault.d/vault.env
+export VAULT_TOKEN=$(echo $VAULT_INIT_OUTPUT | jq '.root_token' | tr -d "'\"")
 
-# export VAULT_TOKEN=`grep "Initial Root Token" /tmp/init.txt | cut -d ":" -f2 | xargs` 
+cat <<EOF > /tmp/admin.hcl
+path "*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+EOF
 
-# cat <<EOF > /tmp/admin.hcl
-# path "*"
-# {
-#   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-# }
-# EOF
-
-# vault auth enable userpass
-# vault policy write admin /tmp/admin.hcl
-# vault write auth/userpass/users/terraform password=${vaultpass} token_policies=admin token_no_default_policy=true
-
-# echo 'export VAULT_ADDR="http://127.0.0.1:8200"' >> /etc/profile.d/exports.sh
-# chmod +x /etc/profile.d/exports.sh
+vault auth enable userpass
+vault policy write admin /tmp/admin.hcl
+vault write auth/userpass/users/terraform password=${vaultpass} token_policies=admin token_no_default_policy=true
