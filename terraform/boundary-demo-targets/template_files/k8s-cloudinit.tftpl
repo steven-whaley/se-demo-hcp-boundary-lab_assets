@@ -75,4 +75,4 @@ kubectl get cm kube-root-ca.crt -o jsonpath="{['data']['ca\.crt']}" > /tmp/cert
 aws ssm put-parameter --region us-west-2 --name cert --value file:///tmp/cert --type String --overwrite
 
 # Save Kubeconfig file to SSM
-aws ssm put-parameter --region us-west-2 --name cert --value file:///etc/rancher/k3s/k3s.yaml --type String --overwrite
+aws ssm put-parameter --region us-west-2 --name kubeconfig --value file:///etc/rancher/k3s/k3s.yaml --type String --overwrite
