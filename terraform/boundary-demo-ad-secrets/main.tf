@@ -95,7 +95,7 @@ resource "vault_token" "boundary-token-it" {
 resource "boundary_credential_store_vault" "it_vault" {
   name        = "it_vault"
   description = "IT Vault Credential Store"
-  namespace   = "admin/${vault_namespace.it.path_fq}"
+  namespace   = vault_namespace.it.path_fq
   address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-it.client_token
   scope_id    = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id

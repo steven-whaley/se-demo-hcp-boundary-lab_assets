@@ -32,9 +32,11 @@ provider "boundary" {
 }
 
 provider "vault" {
-  address   = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
-  token     = data.terraform_remote_state.boundary_demo_init.outputs.vault_token
-  namespace = "admin"
+  address = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
+  auth_login_userpass {
+    username = "terraform"
+    password = data.terraform_remote_state.boundary_demo_init.outputs.vault_password
+  }
 }
 
 provider "hcp" {}

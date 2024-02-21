@@ -58,7 +58,7 @@ resource "aws_instance" "worker" {
   }
 
   depends_on = [
-    module.boundary-eks-vpc, boundary_worker.hcp_pki_worker, aws_key_pair.boundary_ec2_keys
+    boundary_worker.hcp_pki_worker, aws_key_pair.boundary_ec2_keys
   ]
 
   ami           = data.aws_ami.aws_linux_hvm2.id
@@ -66,7 +66,7 @@ resource "aws_instance" "worker" {
 
   key_name                    = aws_key_pair.boundary_ec2_keys.key_name
   monitoring                  = true
-  subnet_id                   = module.boundary-eks-vpc.private_subnets[0]
+  subnet_id                   = data.terraform_remote_state.boundary_demo_init.outputs.priv_subnet_id
   vpc_security_group_ids      = [module.worker-sec-group.security_group_id]
   user_data_base64            = data.cloudinit_config.boundary_worker.rendered
   user_data_replace_on_change = false
@@ -82,7 +82,7 @@ module "worker-sec-group" {
   version = "4.17.1"
 
   name   = "boundary-worker-sec-group"
-  vpc_id = module.boundary-eks-vpc.vpc_id
+  vpc_id = data.terraform_remote_state.boundary_demo_init.outputs.vpc_id
 
   egress_with_cidr_blocks = [
     {
@@ -121,7 +121,4 @@ module "worker-sec-group" {
 
   egress_cidr_blocks = ["0.0.0.0/0"]
   egress_rules       = ["https-443-tcp", "http-80-tcp"]
-
-  ingress_cidr_blocks = [module.boundary-eks-vpc.vpc_cidr_block]
-  ingress_rules       = ["ssh-tcp"]
 }

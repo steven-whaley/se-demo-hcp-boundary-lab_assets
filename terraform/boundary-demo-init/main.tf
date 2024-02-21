@@ -1,24 +1,24 @@
-# resource "random_pet" "pet_name" {
-# }
+resource "random_pet" "pet_name" {
+}
 
-# resource "random_pet" "random_password" {
-#   length = 2
-# }
+resource "random_pet" "random_password" {
+  length = 2
+}
 
-# #Create New HCP Project for these resources
-# resource "hcp_project" "project" {
-#   name        = "instruqt-${random_pet.pet_name.id}"
-#   description = "Project Created by Instruqt Boundary Demo Lab"
-# }
+#Create New HCP Project for these resources
+resource "hcp_project" "project" {
+  name        = "instruqt-${random_pet.pet_name.id}"
+  description = "Project Created by Instruqt Boundary Demo Lab"
+}
 
-# #Create HCP Boundary Cluster
-# resource "hcp_boundary_cluster" "boundary-demo" {
-#   project_id = hcp_project.project.resource_id
-#   cluster_id = "instruqt-${random_pet.pet_name.id}"
-#   username   = "admin"
-#   password   = random_pet.random_password.id
-#   tier       = "PLUS"
-# }
+#Create HCP Boundary Cluster
+resource "hcp_boundary_cluster" "boundary-demo" {
+  project_id = hcp_project.project.resource_id
+  cluster_id = "instruqt-${random_pet.pet_name.id}"
+  username   = "admin"
+  password   = random_pet.random_password.id
+  tier       = "PLUS"
+}
 
 resource "random_string" "vault_pass" {
   length  = 12
@@ -93,7 +93,7 @@ resource "aws_instance" "vault-server" {
   subnet_id                   = module.boundary-demo-vpc.public_subnets[0]
   associate_public_ip_address = true
   vpc_security_group_ids      = [module.vault-security-group.security_group_id]
-  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id })
+  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license=var.vault_license })
 
   tags = {
     Name = "vault-demo"

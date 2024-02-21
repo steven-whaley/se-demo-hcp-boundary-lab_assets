@@ -48,7 +48,3 @@ data "terraform_remote_state" "boundary_demo_init" {
     path = "../boundary-demo-init/terraform.tfstate"
   }
 }
-
-data "aws_arn" "peer_vpc" {
-  arn = module.boundary-eks-vpc.vpc_arn
-}

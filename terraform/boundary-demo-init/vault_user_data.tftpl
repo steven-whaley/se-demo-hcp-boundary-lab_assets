@@ -5,7 +5,7 @@ echo Installing Vault
 sleep 30
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum install -y vault-1.15.5-1
+sudo yum install -y vault-enterprise-1.15.5+ent-1
 sudo yum -y install mysql jq
 
 # prevent memory from being swapped to disk without running the process as root
@@ -17,7 +17,6 @@ sudo mkdir --parents /etc/vault.d
 # Add Vault config file
 cat <<EOF > /etc/vault.d/vault.hcl
 ui = true
-license_path = "/etc/vault.d/vault.hclic"
 
 listener "tcp" {
  address     = "0.0.0.0:8200"
@@ -64,7 +63,7 @@ TimeoutStopSec=30
 StartLimitInterval=60
 LimitNOFILE=65536
 LimitMEMLOCK=infinity
-
+Environment="VAULT_LICENSE=${vault_license}"
 [Install]
 WantedBy=multi-user.target
 EOF

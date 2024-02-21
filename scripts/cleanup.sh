@@ -9,4 +9,5 @@ if [[ "$TF_VAR_use_okta" == "true"]]; then
 fi
 
 cd ${TF_BASE}/boundary-demo-init
-terraform destroy -auto-approve
+terraform destroy -target hcp_boundary_cluster.boundary-demo -auto-approve
+terraform destroy -target hcp_project.project -auto-approve

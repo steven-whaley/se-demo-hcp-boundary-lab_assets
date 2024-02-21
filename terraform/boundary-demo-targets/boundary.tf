@@ -127,7 +127,7 @@ resource "boundary_target" "pie-ssh-cert-target-admin" {
 resource "boundary_credential_store_vault" "pie_vault" {
   name        = "PIE Vault"
   description = "PIE Vault Credential Store"
-  namespace   = "admin/${vault_namespace.pie.path_fq}"
+  namespace   = vault_namespace.pie.path_fq
   address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-pie.client_token
   scope_id    = boundary_scope.pie_aws_project.id
@@ -224,7 +224,7 @@ resource "boundary_target" "dev-db-target" {
 resource "boundary_credential_store_vault" "dev_vault" {
   name        = "dev_vault"
   description = "Dev Vault Credential Store"
-  namespace   = "admin/${vault_namespace.dev.path_fq}"
+  namespace   = vault_namespace.dev.path_fq
   address     = data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url
   token       = vault_token.boundary-token-dev.client_token
   scope_id    = boundary_scope.dev_aws_project.id
