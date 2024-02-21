@@ -64,9 +64,9 @@ resource "boundary_scope" "pie_aws_project" {
 }
 
 # Create targets in PIE AWS project
-resource "boundary_target" "pie-k8s-target" {
+resource "boundary_target" "pie-k8s-vault-target" {
   type                     = "tcp"
-  name                     = "pie-k8s-target"
+  name                     = "pie-k8s-vault-target"
   description              = "connect to the k8s Target with a token from the Vault K8s secret engine"
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
@@ -77,6 +77,17 @@ resource "boundary_target" "pie-k8s-target" {
     boundary_credential_library_vault.k8s-admin-role.id,
     boundary_credential_library_vault.k8s-cert.id
   ]
+}
+
+resource "boundary_target" "pie-k8s-target" {
+  type                     = "tcp"
+  name                     = "pie-k8s-target"
+  description              = "Connect to the K8s target with user supplied certificate"
+  scope_id                 = boundary_scope.pie_aws_project.id
+  session_connection_limit = -1
+  default_port             = 6443
+  address                  = aws_instance.k8s_cluster.private_ip
+  egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
 }
 
 resource "boundary_target" "pie-ssh-target" {

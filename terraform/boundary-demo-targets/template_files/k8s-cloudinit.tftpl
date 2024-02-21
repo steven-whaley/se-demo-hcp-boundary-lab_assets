@@ -4,7 +4,7 @@ yum update -y
 # Set up SSH Certificate Auth
 echo "TrustedUserCAKeys /etc/ssh/ca-key.pub" >> /etc/ssh/sshd_config
 
-curl -o /etc/ssh/ca-key.pub -H "X-Vault-Token: ${vault_token}" -H "X-Vault-Namespace: admin/${vault_namespace}" \
+curl -o /etc/ssh/ca-key.pub -H "X-Vault-Namespace: ${vault_namespace}" \
   ${vault_url}/v1/${vault_ssh_mount}/public_key
 chown 1000:1000 /etc/ssh/ca-key.pub
 chmod 644 /etc/ssh/ca-key.pub
@@ -73,3 +73,6 @@ aws ssm put-parameter --region us-west-2 --name token --value file:///tmp/vault-
 sleep 30
 kubectl get cm kube-root-ca.crt -o jsonpath="{['data']['ca\.crt']}" > /tmp/cert
 aws ssm put-parameter --region us-west-2 --name cert --value file:///tmp/cert --type String --overwrite
+
+# Save Kubeconfig file to SSM
+aws ssm put-parameter --region us-west-2 --name cert --value file:///etc/rancher/k3s/k3s.yaml --type String --overwrite

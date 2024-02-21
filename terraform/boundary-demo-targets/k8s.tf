@@ -17,7 +17,6 @@ resource "aws_instance" "k8s_cluster" {
   iam_instance_profile = aws_iam_instance_profile.ssm_write_profile.name
   user_data = templatefile("./template_files/k8s-cloudinit.tftpl", { 
     password = random_password.db_password.result, 
-    vault_token = vault_token.read-key.client_token
     vault_namespace = vault_namespace.pie.path_fq
     vault_url = data.terraform_remote_state.boundary_demo_init.outputs.vault_priv_url
     vault_ssh_mount = vault_mount.ssh.path
