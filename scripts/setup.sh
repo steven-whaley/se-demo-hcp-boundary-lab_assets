@@ -78,6 +78,26 @@ if [[ "$use_okta" == "y" ]]; then
   echo "export TF_VAR_okta_org_name=\"$okta_org_name\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh 
 fi
 
+use_ldap="failed"
+while [ "$use_ldap" = "failed" ]
+do
+  echo "Do you want to configure Boundary to use Vault LDAP Secrets Engine to connect to the RDP Target?" 
+  echo "This adds approximately 7 minutes to the deployment.  Please answer y/n"
+  read use_ldap
+  case $use_okta in
+    y) 
+      echo "export TF_VAR_use_ldap=\"true\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+      ;;
+    n) 
+      echo "export TF_VAR_use_ldap=\"false\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
+      ;;
+    *) 
+      use_okta=failed; echo "Please enter either y or n when answering the question."
+      echo ""
+      ;;
+  esac
+done
+
 echo "export TF_VAR_public_key=\"$(cat ~/.ssh/id_rsa.pub)\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
 
 source .bashrc
@@ -112,55 +132,18 @@ if [[ "$use_okta" == "y" ]]; then
   OKTA_USER_PASSWORD=`terraform output -state="${TF_BASE}/boundary-demo-okta/terraform.tfstate" -raw okta_password`
 fi
 
-echo ""
-echo "----------------------"
-echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
-echo "The Boundary Cluster admin user is: admin"
-echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
-echo "The Boundary Cluster password auth method ID is: ${BOUNDARY_PASSWORD_AUTH_METHOD}"
+if [[ "$use_ldap" == "y" ]]; then
+  echo "Setting up the LDAP secrets engine to provide dynamic AD credentials to connect to the Windows target."
+  echo "The script will sleep for 5 minutes while waiting for Domain Controller promotion and Certificate Services setup to complete."
+  sleep 360
 
-if [[ "$use_okta" == "y" ]]; then
-  echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
-fi
-echo "----------------------"
-echo ""
+  cd ${TF_BASE}/boundary-demo-ad-secrets
+  terraform init
+  terraform apply -auto-approve
+  if [ $? -eq 0 ]; then
+    touch ${HOME}/.ldap-success
+  fi 
+fi 
 
-echo "Setting up the LDAP secrets engine to provide dynamic AD credentials to connect to the Windows target."
-echo "The script will sleep for 5 minutes while waiting for Domain Controller promotion and Certificate Services setup to complete."
-echo "Your Boundary environment is ready and you can log in and begin connecting to resources while you wait for the last target to become available."
-sleep 360
-
-cd ${TF_BASE}/boundary-demo-ad-secrets
-terraform init
-terraform apply -auto-approve
-if [ $? -eq 0 ]; then
-  touch ${HOME}/.ldap-success
-fi
-
-echo "The deployment is complete, should now have an additional Windows RDP target available with credentials brokered from Vault."
-echo ""
-echo "----------------------"
-echo "The Boundary Cluster URL is:  ${BOUNDARY_URL}"
-echo "The Boundary Cluster admin user is: admin"
-echo "The Boundary Cluster admin password is: ${BOUNDARY_ADMIN_PASSWORD}"
-echo "The Boundary Cluster password auth method ID is: ${BOUNDARY_PASSWORD_AUTH_METHOD}"
-
-if [[ "$use_okta" == "y" ]]; then
-  echo "The Okta User Password is: ${OKTA_USER_PASSWORD}"
-fi
-echo "----------------------"
-
-echo "Set the Boundary Cluster Address on your CLI"
-echo "export BOUNDARY_ADDR=${BOUNDARY_URL}"
-echo ""
-echo "To log in as the admin user run:"
-echo "boundary authenticate password -auth-method-id ${BOUNDARY_PASSWORD_AUTH_METHOD}"
-echo "The local admin password is ${BOUNDARY_ADMIN_PASSWORD}"
-echo ""
-if [[ "$use_okta" == "y" ]]; then
-  echo "To Log in as an Okta user run:"
-  echo "boundary authenticate"
-  echo "Valid Okta users are global_user@boundary.lab, pie_user@boundary.lab, dev_user@boundary.lab, and it_user@boundary.lab"
-  echo "The Okta user password is ${OKTA_USER_PASSWORD}"
-fi
-
+echo "Click Next in the bottom right to validate that your Boundary environment is set up correctly and get \
+instructions on how to log in and connect to your targets"
