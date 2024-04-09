@@ -291,6 +291,11 @@ resource "boundary_host_catalog_plugin" "it_dynamic_catalog" {
   })
 }
 
+resource "time_sleep" "catalog_wait" {
+  depends_on      = [boundary_host_catalog_plugin.it_dynamic_catalog]
+  create_duration = "30s"
+}
+
 # Create the host set for IT team from dynamic host catalog
 resource "boundary_host_set_plugin" "it_set" {
   name            = "IT hosts in ${var.region}"
