@@ -81,6 +81,7 @@ fi
 use_ldap="failed"
 while [ "$use_ldap" = "failed" ]
 do
+  echo ""
   echo "Do you want to configure Boundary to use Vault LDAP Secrets Engine to connect to the RDP Target?" 
   echo "This adds approximately 7 minutes to the deployment.  Please answer y/n"
   read use_ldap
