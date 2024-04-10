@@ -6,7 +6,18 @@ sleep 30
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
 sudo yum install -y vault-enterprise-1.15.5+ent-1
-sudo yum -y install mysql jq
+sudo yum -y install mysql jq docker
+
+# Run the LDAP container
+docker run --detach --rm -p 1389:1389 -p 1636:1636 --name openldap \
+  --env LDAP_ADMIN_USERNAME=admin \
+  --env LDAP_ADMIN_PASSWORD=${ldap_pass} \
+  --env LDAP_USERS=ldap_global_user \
+  --env LDAP_PASSWORDS=${ldap_pass} \
+  --env LDAP_GROUP=boundary_users \
+  --env LDAP_ROOT=dc=boundary,dc=lab \
+  --env LDAP_ADMIN_DN=cn=admin,dc=boundary,dc=lab \
+  bitnami/openldap:latest
 
 # prevent memory from being swapped to disk without running the process as root
 sudo setcap cap_ipc_lock=+ep /usr/bin/vault
