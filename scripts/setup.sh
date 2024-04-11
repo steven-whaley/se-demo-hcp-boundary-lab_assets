@@ -146,5 +146,7 @@ if [[ "$use_ldap" == "y" ]]; then
   fi 
 fi 
 
-echo "Click Next in the bottom right to validate that your Boundary environment is set up correctly and get \
+echo ""
+echo ""
+echo "Click Check in the bottom right to validate that your Boundary environment is set up correctly and get \
 instructions on how to log in and connect to your targets"
