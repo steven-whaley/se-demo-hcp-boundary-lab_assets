@@ -90,7 +90,7 @@ module "worker-sec-group" {
       from_port   = 9202
       to_port     = 9202
       protocol    = "tcp"
-      description = "Boundary Controller to Upsream"
+      description = "Worker to HCP Boundary Control plane"
       cidr_blocks = "0.0.0.0/0"
     }
   ]

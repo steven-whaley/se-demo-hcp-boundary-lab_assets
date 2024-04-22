@@ -109,6 +109,7 @@ resource "boundary_target" "pie-ssh-cert-target" {
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
+  default_client_port = 53305
   address = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
     boundary_credential_library_vault_ssh_certificate.ssh_cert.id
@@ -125,6 +126,7 @@ resource "boundary_target" "pie-ssh-cert-target-admin" {
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
+  default_client_port = 53306
   address = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
     boundary_credential_library_vault_ssh_certificate.ssh_cert_admin.id
