@@ -85,7 +85,7 @@ do
   echo "Do you want to configure Boundary to use Vault LDAP Secrets Engine to connect to the RDP Target?" 
   echo "This adds approximately 7 minutes to the deployment.  Please answer y/n"
   read use_ldap
-  case $use_okta in
+  case $use_ldap in
     y) 
       echo "export TF_VAR_use_ldap=\"true\"" >> ~/.${INSTRUQT_PARTICIPANT_ID}-env.sh
       ;;
