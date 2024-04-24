@@ -5,6 +5,11 @@ resource "random_pet" "random_password" {
   length = 2
 }
 
+resource "random_string" "ldap_pass" {
+  length = 8
+  special = false
+}
+
 #Create New HCP Project for these resources
 resource "hcp_project" "project" {
   name        = "instruqt-${random_pet.pet_name.id}"
@@ -100,7 +105,7 @@ resource "aws_instance" "vault-server" {
   subnet_id                   = module.boundary-demo-vpc.public_subnets[0]
   associate_public_ip_address = true
   vpc_security_group_ids      = [module.vault-security-group.security_group_id]
-  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license=var.vault_license, ldap_pass=random_pet.random_password.id })
+  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license=var.vault_license, ldap_pass=random_string.ldap_pass.id })
 
   tags = {
     Name = "vault-demo"

@@ -46,3 +46,8 @@ output "vault_sec_group" {
   description = "The Security Group ID for the Vault Server"
   value = module.vault-security-group.security_group_id
 }
+
+output "ldap_password" {
+  description = "The Password for the ldap_global_user Boundary User"
+  value = random_string.ldap_pass.id
+}
