@@ -3,8 +3,9 @@ resource "time_sleep" "wait_60_sec" {
   create_duration = "60s"
 }
 
+#### LDAP Auth Method Setup
 # Create LDAP Auth Method
-resource "boundary_auth_method_ldap" "forumsys_ldap" {
+resource "boundary_auth_method_ldap" "openldap" {
   name          = "OpenLDAP"
   scope_id      = "global"                               
   urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.ldap_address}:1389"]           
@@ -15,7 +16,45 @@ resource "boundary_auth_method_ldap" "forumsys_ldap" {
   bind_password = data.terraform_remote_state.boundary_demo_init.outputs.ldap_password                         
   state         = "active-public"                        
   #enable_groups = true                                   
-  #discover_dn   = true                                   
+  #discover_dn   = true
+  is_primary_for_scope = false                                   
+}
+
+# Create LDAP Managed Group
+resource "boundary_managed_group_ldap" "global_users" {
+  name           = "Global Users"
+  description    = "Boundary users with access to all orgs and projects"
+  auth_method_id = boundary_auth_method_ldap.openldap.id
+  group_names    = ["boundary_users"]
+}
+
+# Create LDAP User and Account
+resource "boundary_account_ldap" "global_user" {
+  auth_method_id = boundary_auth_method_ldap.openldap.id
+  login_name     = "ldap_global_user"
+  name           = "ldap_global_user"
+}
+
+resource "boundary_user" "global_user" {
+  name        = "global_user"
+  description = "LDAP user with access to all targets"
+  scope_id    = "global"
+  account_ids = [boundary_account_ldap.global_user.id]
+}
+
+resource "boundary_role" "ldap_global_role" {
+  name          = "LDAP Users Global Role"
+  description   = "Role that grants access to all targets in all Orgs"
+  principal_ids = [boundary_managed_group_ldap.global_users.id]
+  grant_strings = [
+    "ids=*;type=session;actions=list,read:self,cancel:self",
+    "ids=*;type=target;actions=list,authorize-session,read",
+    "ids=*;type=host-set;actions=list,read",
+    "ids=*;type=host;actions=list,read",
+    "ids=*;type=host-catalog;actions=list,read",
+  ]
+  scope_id      = "global"
+  grant_scope_ids = [descendants]
 }
 
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
