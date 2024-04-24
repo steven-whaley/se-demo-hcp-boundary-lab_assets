@@ -51,3 +51,8 @@ output "ldap_password" {
   description = "The Password for the ldap_global_user Boundary User"
   value = random_string.ldap_pass.id
 }
+
+output "ldap_address" {
+  description = "The IP address of the LDAP server"
+  value = aws_instance.vault-server.public_ip
+}

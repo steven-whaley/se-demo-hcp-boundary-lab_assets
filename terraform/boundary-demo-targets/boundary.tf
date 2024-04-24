@@ -7,7 +7,7 @@ resource "time_sleep" "wait_60_sec" {
 resource "boundary_auth_method_ldap" "forumsys_ldap" {
   name          = "OpenLDAP"
   scope_id      = "global"                               
-  urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url}:1389"]           
+  urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.ldap_address}:1389"]           
   user_dn       = "ou=users,dc=boundary,dc=lab"                    
   user_attr     = "uid"                                  
   #group_dn      = "dc=example,dc=com"                    
