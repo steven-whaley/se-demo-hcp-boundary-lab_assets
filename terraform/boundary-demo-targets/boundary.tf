@@ -3,6 +3,21 @@ resource "time_sleep" "wait_60_sec" {
   create_duration = "60s"
 }
 
+# Create LDAP Auth Method
+resource "boundary_auth_method_ldap" "forumsys_ldap" {
+  name          = "OpenLDAP"
+  scope_id      = "global"                               
+  urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.vault_pub_url}:1389"]           
+  user_dn       = "ou=users,dc=boundary,dc=lab"                    
+  user_attr     = "uid"                                  
+  #group_dn      = "dc=example,dc=com"                    
+  bind_dn       = "cn=admin,dc=boundary,dc=lab" 
+  bind_password = data.terraform_remote_state.boundary_demo_init.outputs.ldap_password                         
+  state         = "active-public"                        
+  #enable_groups = true                                   
+  #discover_dn   = true                                   
+}
+
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
 resource "aws_iam_user" "boundary_user" {
   name                 = "instruqt-boundary-user"
