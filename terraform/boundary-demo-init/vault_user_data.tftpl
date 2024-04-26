@@ -15,7 +15,7 @@ systemctl start docker
 docker run --detach --rm -p 1389:1389 -p 1636:1636 --name openldap \
   --env LDAP_ADMIN_USERNAME=admin \
   --env LDAP_ADMIN_PASSWORD=${ldap_pass} \
-  --env LDAP_USERS=ldap_global_user \
+  --env LDAP_USERS=global_user \
   --env LDAP_PASSWORDS=${ldap_pass} \
   --env LDAP_GROUP=boundary_users \
   --env LDAP_ROOT=dc=boundary,dc=lab \
