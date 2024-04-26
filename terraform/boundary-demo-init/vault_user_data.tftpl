@@ -22,7 +22,7 @@ docker run --detach --rm -p 1389:1389 -p 1636:1636 --name openldap \
 
 # Load the LDAP Container
 
-cat <<EOF > ./users.ldif
+cat <<EOF > /tmp/users.ldif
 dn: dc=boundary,dc=lab
 changetype: add
 objectClass: dcObject
@@ -93,7 +93,9 @@ member: cn=it_user,ou=users,dc=boundary,dc=lab
 member: cn=global_user,ou=users,dc=boundary,dc=lab
 EOF
 
-ldapmodify -x -h 127.0.0.1 -p 1389 -D cn=admin,dc=boundary,dc=lab -w ${ldap_pass} -f users.ldif
+sleep 3
+
+ldapmodify -x -h 127.0.0.1 -p 1389 -D cn=admin,dc=boundary,dc=lab -w ${ldap_pass} -f /tmp/users.ldif
 
 # prevent memory from being swapped to disk without running the process as root
 sudo setcap cap_ipc_lock=+ep /usr/bin/vault
