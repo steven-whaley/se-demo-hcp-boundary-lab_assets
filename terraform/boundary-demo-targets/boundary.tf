@@ -6,7 +6,7 @@ resource "time_sleep" "wait_60_sec" {
 #### LDAP Auth Method Setup
 # Create LDAP Auth Method
 resource "boundary_auth_method_ldap" "openldap" {
-  count = var.use_okta ? 1 : 0
+  count = var.use_okta ? 0 : 1
   name          = "OpenLDAP"
   scope_id      = "global"                               
   urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.ldap_address}:1389"]           
@@ -23,7 +23,7 @@ resource "boundary_auth_method_ldap" "openldap" {
 
 # Create LDAP Managed Group
 resource "boundary_managed_group_ldap" "global_users" {
-  count = var.use_okta ? 1 : 0
+  count = var.use_okta ? 0 : 1
   name           = "Global Users"
   description    = "Boundary users with access to all orgs and projects"
   auth_method_id = boundary_auth_method_ldap.openldap.id
@@ -31,7 +31,7 @@ resource "boundary_managed_group_ldap" "global_users" {
 }
 
 resource "boundary_role" "ldap_global_role" {
-  count = var.use_okta ? 1 : 0
+  count = var.use_okta ? 0 : 1
   name          = "LDAP Users Global Role"
   description   = "Role that grants access to all targets in all Orgs"
   principal_ids = [boundary_managed_group_ldap.global_users.id]
@@ -43,7 +43,7 @@ resource "boundary_role" "ldap_global_role" {
     "ids=*;type=host-catalog;actions=list,read",
   ]
   scope_id      = "global"
-  grant_scope_ids = [descendants]
+  grant_scope_ids = ["descendants"]
 }
 
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
@@ -145,7 +145,7 @@ resource "boundary_target" "pie-ssh-target" {
 }
 
 resource "boundary_target" "pie-ssh-cert-target" {
-  count = var.use_okta ? 1 : 0
+  #count = var.use_okta ? 1 : 0
   type                     = "ssh"
   name                     = "pie-ssh-cert-target"
   description              = "Connect to the SSH server using OIDC username.  Only works for OIDC users."
