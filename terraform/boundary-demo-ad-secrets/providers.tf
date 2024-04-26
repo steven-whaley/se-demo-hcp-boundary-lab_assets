@@ -6,7 +6,7 @@ terraform {
     }
     boundary = {
       source  = "hashicorp/boundary"
-      version = "1.1.12"
+      version = "1.1.14"
     }
     vault = {
       version = "3.23.0"
