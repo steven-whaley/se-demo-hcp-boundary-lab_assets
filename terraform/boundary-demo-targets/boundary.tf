@@ -85,7 +85,7 @@ resource "boundary_role" "ldap_it_role" {
   count = var.use_okta ? 0 : 1
   name          = "LDAP Users IT Role"
   description   = "Role that grants access to all targets the IT Org"
-  principal_ids = [boundary_managed_group_ldap.global_users[0].id]
+  principal_ids = [boundary_managed_group_ldap.it_users[0].id]
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
     "ids=*;type=target;actions=list,authorize-session,read",
