@@ -2,7 +2,7 @@ terraform {
   required_providers {
     boundary = {
       source  = "hashicorp/boundary"
-      version = "1.1.12"
+      version = "1.1.14"
     }
     okta = {
       source  = "okta/okta"
