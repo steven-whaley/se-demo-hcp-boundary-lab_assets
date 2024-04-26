@@ -68,23 +68,23 @@ resource "boundary_role" "ldap_dev_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = boundary_scope.pie_org.id
+  scope_id      = boundary_scope.dev_org.id
   grant_scope_ids = ["children"]
 }
 
 # IT Group
-resource "boundary_managed_group_ldap" "pie_users" {
+resource "boundary_managed_group_ldap" "it_users" {
   count = var.use_okta ? 0 : 1
-  name           = "PIE Users"
-  description    = "Boundary users with access PIE Org targets"
+  name           = "IT Users"
+  description    = "Boundary users with access IT Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
-  group_names    = ["pie_users"]
+  group_names    = ["IT"]
 }
 
-resource "boundary_role" "ldap_pie_role" {
+resource "boundary_role" "ldap_it_role" {
   count = var.use_okta ? 0 : 1
-  name          = "LDAP Users PIE Role"
-  description   = "Role that grants access to all targets the PIE Org"
+  name          = "LDAP Users IT Role"
+  description   = "Role that grants access to all targets the IT Org"
   principal_ids = [boundary_managed_group_ldap.global_users[0].id]
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
@@ -93,7 +93,7 @@ resource "boundary_role" "ldap_pie_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = boundary_scope.pie_org.id
+  scope_id      = boundary_scope.it_org.id
   grant_scope_ids = ["children"]
 }
 
