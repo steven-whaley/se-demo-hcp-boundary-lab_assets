@@ -6,7 +6,7 @@ sleep 30
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
 sudo yum install -y vault-enterprise-1.15.5+ent-1
-sudo yum -y install mysql jq docker
+sudo yum -y install mysql jq docker openldap openldap-clients
 
 # Run the LDAP container
 systemctl enable docker
@@ -15,12 +15,85 @@ systemctl start docker
 docker run --detach --rm -p 1389:1389 -p 1636:1636 --name openldap \
   --env LDAP_ADMIN_USERNAME=admin \
   --env LDAP_ADMIN_PASSWORD=${ldap_pass} \
-  --env LDAP_USERS=global_user \
-  --env LDAP_PASSWORDS=${ldap_pass} \
-  --env LDAP_GROUP=boundary_users \
   --env LDAP_ROOT=dc=boundary,dc=lab \
   --env LDAP_ADMIN_DN=cn=admin,dc=boundary,dc=lab \
-  bitnami/openldap:latest
+  --env LDAP_SKIP_DEFAULT_TREE=yes \
+  bitnami/openldap:2.6.7
+
+# Load the LDAP Container
+
+cat <<EOF > ./users.ldif
+dn: dc=boundary,dc=lab
+changetype: add
+objectClass: dcObject
+objectClass: organization
+dc: boundary
+o: HCP
+
+dn: ou=users,dc=boundary,dc=lab
+changetype: add
+objectClass: organizationalUnit
+ou: users
+
+dn: cn=global_user,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: global_user
+sn: Global
+objectClass: inetOrgPerson
+userPassword: ${ldap_pass}
+mail: global_user@boundary.lab
+uid: global_user
+
+dn: cn=pie_user,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: pie_user
+sn: PIE
+objectClass: inetOrgPerson
+userPassword: ${ldap_pass}
+mail: pie_user@boundary.lab
+uid: pie_user
+
+dn: cn=dev_user,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: dev_user
+sn: Dev
+objectClass: inetOrgPerson
+userPassword: ${ldap_pass}
+mail: dev_user@boundary.lab
+uid: dev_user
+
+dn: cn=it_user,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: it_user
+sn: IT
+objectClass: inetOrgPerson
+userPassword: ${ldap_pass}
+mail: it_user@boundary.lab
+uid: it_user
+
+dn: cn=pie_group,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: pie_group
+objectClass: groupOfNames
+member: cn=pie_user,ou=users,dc=boundary,dc=lab
+member: cn=global_user,ou=users,dc=boundary,dc=lab
+
+dn: cn=dev_group,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: dev_group
+objectClass: groupOfNames
+member: cn=dev_user,ou=users,dc=boundary,dc=lab
+member: cn=global_user,ou=users,dc=boundary,dc=lab
+
+dn: cn=it_group,ou=users,dc=boundary,dc=lab
+changetype: add
+cn: it_group
+objectClass: groupOfNames
+member: cn=it_user,ou=users,dc=boundary,dc=lab
+member: cn=global_user,ou=users,dc=boundary,dc=lab
+EOF
+
+ldapmodify -x -h 127.0.0.1 -p 1389 -D cn=admin,dc=boundary,dc=lab -w ${ldap_pass} -f users.ldif
 
 # prevent memory from being swapped to disk without running the process as root
 sudo setcap cap_ipc_lock=+ep /usr/bin/vault
