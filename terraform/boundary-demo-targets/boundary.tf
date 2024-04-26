@@ -26,7 +26,7 @@ resource "boundary_managed_group_ldap" "global_users" {
   count = var.use_okta ? 0 : 1
   name           = "Global Users"
   description    = "Boundary users with access to all orgs and projects"
-  auth_method_id = boundary_auth_method_ldap.openldap.id
+  auth_method_id = boundary_auth_method_ldap.openldap[0].id
   group_names    = ["boundary_users"]
 }
 
@@ -34,7 +34,7 @@ resource "boundary_role" "ldap_global_role" {
   count = var.use_okta ? 0 : 1
   name          = "LDAP Users Global Role"
   description   = "Role that grants access to all targets in all Orgs"
-  principal_ids = [boundary_managed_group_ldap.global_users.id]
+  principal_ids = [boundary_managed_group_ldap.global_users[0].id]
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
     "ids=*;type=target;actions=list,authorize-session,read",
