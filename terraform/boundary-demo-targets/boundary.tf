@@ -21,19 +21,70 @@ resource "boundary_auth_method_ldap" "openldap" {
   is_primary_for_scope = true                                   
 }
 
-# Create LDAP Managed Group
-resource "boundary_managed_group_ldap" "global_users" {
+# Create LDAP Managed Groups
+# PIE Group
+resource "boundary_managed_group_ldap" "pie_users" {
   count = var.use_okta ? 0 : 1
-  name           = "Global Users"
-  description    = "Boundary users with access to all orgs and projects"
+  name           = "PIE Users"
+  description    = "Boundary users with access PIE Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
-  group_names    = ["boundary_users"]
+  group_names    = ["pie_group"]
 }
 
-resource "boundary_role" "ldap_global_role" {
+resource "boundary_role" "ldap_pie_role" {
   count = var.use_okta ? 0 : 1
-  name          = "LDAP Users Global Role"
-  description   = "Role that grants access to all targets in all Orgs"
+  name          = "LDAP Users PIE Role"
+  description   = "Role that grants access to all targets the PIE Org"
+  principal_ids = [boundary_managed_group_ldap.pie_users[0].id]
+  grant_strings = [
+    "ids=*;type=session;actions=list,read:self,cancel:self",
+    "ids=*;type=target;actions=list,authorize-session,read",
+    "ids=*;type=host-set;actions=list,read",
+    "ids=*;type=host;actions=list,read",
+    "ids=*;type=host-catalog;actions=list,read",
+  ]
+  scope_id      = boundary_scope.pie_org.id
+  grant_scope_ids = ["children"]
+}
+
+# DEV Group
+resource "boundary_managed_group_ldap" "dev_users" {
+  count = var.use_okta ? 0 : 1
+  name           = "DEV Users"
+  description    = "Boundary users with access DEV Org targets"
+  auth_method_id = boundary_auth_method_ldap.openldap[0].id
+  group_names    = ["dev_group"]
+}
+
+resource "boundary_role" "ldap_dev_role" {
+  count = var.use_okta ? 0 : 1
+  name          = "LDAP Users DEV Role"
+  description   = "Role that grants access to all targets the DEV Org"
+  principal_ids = [boundary_managed_group_ldap.dev_users[0].id]
+  grant_strings = [
+    "ids=*;type=session;actions=list,read:self,cancel:self",
+    "ids=*;type=target;actions=list,authorize-session,read",
+    "ids=*;type=host-set;actions=list,read",
+    "ids=*;type=host;actions=list,read",
+    "ids=*;type=host-catalog;actions=list,read",
+  ]
+  scope_id      = boundary_scope.pie_org.id
+  grant_scope_ids = ["children"]
+}
+
+# IT Group
+resource "boundary_managed_group_ldap" "pie_users" {
+  count = var.use_okta ? 0 : 1
+  name           = "PIE Users"
+  description    = "Boundary users with access PIE Org targets"
+  auth_method_id = boundary_auth_method_ldap.openldap[0].id
+  group_names    = ["pie_users"]
+}
+
+resource "boundary_role" "ldap_pie_role" {
+  count = var.use_okta ? 0 : 1
+  name          = "LDAP Users PIE Role"
+  description   = "Role that grants access to all targets the PIE Org"
   principal_ids = [boundary_managed_group_ldap.global_users[0].id]
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
@@ -42,9 +93,10 @@ resource "boundary_role" "ldap_global_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = "global"
-  grant_scope_ids = ["descendants"]
+  scope_id      = boundary_scope.pie_org.id
+  grant_scope_ids = ["children"]
 }
+
 
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
 resource "aws_iam_user" "boundary_user" {
