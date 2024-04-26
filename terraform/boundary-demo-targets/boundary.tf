@@ -75,10 +75,10 @@ resource "boundary_role" "ldap_dev_role" {
 # IT Group
 resource "boundary_managed_group_ldap" "it_users" {
   count = var.use_okta ? 0 : 1
-  name           = "IT Users"
+  name           = "LDAP Users IT Role"
   description    = "Boundary users with access IT Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
-  group_names    = ["IT"]
+  group_names    = ["it_group"]
 }
 
 resource "boundary_role" "ldap_it_role" {
@@ -196,8 +196,8 @@ resource "boundary_target" "pie-ssh-target" {
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
 }
 
-resource "boundary_target" "pie-ssh-cert-target" {
-  #count = var.use_okta ? 1 : 0
+resource "boundary_target" "pie-ssh-cert-target-okta" {
+  count = var.use_okta ? 1 : 0
   type                     = "ssh"
   name                     = "pie-ssh-cert-target"
   description              = "Connect to the SSH server using OIDC username.  Only works for OIDC users."
@@ -206,7 +206,24 @@ resource "boundary_target" "pie-ssh-cert-target" {
   default_port             = 22
   address = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
-    boundary_credential_library_vault_ssh_certificate.ssh_cert.id
+    boundary_credential_library_vault_ssh_certificate.ssh_cert_okta.id
+  ]
+  egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
+ enable_session_recording = true
+ storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
+}
+
+resource "boundary_target" "pie-ssh-cert-target-ldap" {
+  count = var.use_okta ? 0 : 1
+  type                     = "ssh"
+  name                     = "pie-ssh-cert-target"
+  description              = "Connect to the SSH server using LDAP username.  Only works for LDAP users."
+  scope_id                 = boundary_scope.pie_aws_project.id
+  session_connection_limit = -1
+  default_port             = 22
+  address = aws_instance.k8s_cluster.private_ip
+  injected_application_credential_source_ids = [
+    boundary_credential_library_vault_ssh_certificate.ssh_cert_ldap.id
   ]
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
  enable_session_recording = true
@@ -253,10 +270,10 @@ resource "boundary_credential_library_vault" "k8s-admin-role" {
   EOT
 }
 
-# Credential Library to provide SSH certificate for logged in user
-resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert" {
-  name                = "ssh_cert"
-  description         = "Signed SSH Certificate Credential Library"
+# Credential Library to provide SSH certificate for logged in user either through Okta or LDAP
+resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_okta" {
+  name                = "ssh_cert_okda"
+  description         = "Signed SSH Certificate Credential Library for Okta users"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
   path                = "ssh/sign/cert-role" # change to Vault backend path
   username            = "{{truncateFrom .User.Email \"@\"}}"
@@ -266,6 +283,20 @@ resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert" {
     permit-pty = ""
   }
 }
+
+resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_ldap" {
+  name                = "ssh_cert_ldap"
+  description         = "Signed SSH Certificate Credential Library for LDAP users"
+  credential_store_id = boundary_credential_store_vault.pie_vault.id
+  path                = "ssh/sign/cert-role" # change to Vault backend path
+  username            = "{{.Account.LoginName}}"
+  key_type            = "ecdsa"
+  key_bits            = 384
+  extensions = {
+    permit-pty = ""
+  }
+}
+
 
 # Credential library to provide SSH certificate for ec2-user
 resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_admin" {
