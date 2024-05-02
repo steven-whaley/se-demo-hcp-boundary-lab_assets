@@ -203,7 +203,7 @@ resource "boundary_target" "pie-worker-ssh-target" {
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
-  address                  = "127.0.0.1"
+  address                  = aws_instance.worker.private_ip
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
 }
 
