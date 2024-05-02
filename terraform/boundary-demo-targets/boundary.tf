@@ -196,6 +196,17 @@ resource "boundary_target" "pie-ssh-target" {
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
 }
 
+resource "boundary_target" "pie-worker-ssh-target" {
+  type                     = "tcp"
+  name                     = "pie-worker-ssh-target"
+  description              = "Connect to the SSH target with a user supplied SSH key"
+  scope_id                 = boundary_scope.pie_aws_project.id
+  session_connection_limit = -1
+  default_port             = 22
+  address                  = "127.0.0.1"
+  egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
+}
+
 resource "boundary_target" "pie-ssh-cert-target-okta" {
   count = var.use_okta ? 1 : 0
   type                     = "ssh"
