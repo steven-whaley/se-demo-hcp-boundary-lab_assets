@@ -127,3 +127,11 @@ resource "boundary_target" "it-rdp-target-admin" {
     boundary_credential_library_vault.domain_admin.id
   ]
 }
+
+resource "boundary_alias_target" "it-rdp-target-admin-alias" {
+  name                      = "it-rdp-admin"
+  description               = "The alias for the IT RDP target with Vault supplied domain admin credentials"
+  scope_id                  = "global"
+  value                     = "rdp-admin.boundary.lab"
+  destination_id            = boundary_target.it-rdp-target-admin.id
+}
