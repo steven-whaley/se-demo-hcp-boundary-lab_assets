@@ -564,3 +564,13 @@ resource "boundary_storage_bucket" "pie_session_recording_bucket" {
   })
   worker_filter = "\"${var.region}\" in \"/tags/region\""
 }
+
+# Set up Permissions to list aliases
+resource "boundary_role" "list_aliases" {
+  count = var.use_okta ? 0 : 1
+  name          = "list_aliases"
+  description   = "Role to allow listing aliases"
+  principal_ids = [boundary_managed_group_ldap.pie_users[0].id, boundary_managed_group_ldap.dev_users[0].id, boundary_managed_group_ldap.it_users[0].id]
+  grant_strings = ["ids=*;type=alias;actions=list,read"]
+  scope_id      = "global"
+}
