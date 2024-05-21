@@ -177,7 +177,7 @@ resource "boundary_target" "pie-k8s-vault-target" {
 resource "boundary_alias_target" "pie-k8s-vault-target-alias" {
   name                      = "pie-k8s-vault"
   description               = "The alias for the PIE k8s cluster with Vault credentials"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "k8s-vault.boundary.lab"
   destination_id            = boundary_target.pie-k8s-vault-target.id
 }
@@ -196,7 +196,7 @@ resource "boundary_target" "pie-k8s-target" {
 resource "boundary_alias_target" "pie-k8s-target-alias" {
   name                      = "pie-k8s"
   description               = "The alias for the PIE k8s cluster with user credentials"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "k8s.boundary.lab"
   destination_id            = boundary_target.pie-k8s-target.id
 }
@@ -215,7 +215,7 @@ resource "boundary_target" "pie-ssh-target" {
 resource "boundary_alias_target" "pie-ssh-target-alias" {
   name                      = "pie-ssh"
   description               = "The alias for the PIE SSH server with user supplied keys"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "ssh.boundary.lab"
   destination_id            = boundary_target.pie-ssh-target.id
 }
@@ -234,7 +234,7 @@ resource "boundary_target" "pie-worker-ssh-target" {
 resource "boundary_alias_target" "pie-worker-ssh-target-alias" {
   name                      = "pie-worker-ssh"
   description               = "The alias for the Boundary worker with user supplied keys"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "worker.boundary.lab"
   destination_id            = boundary_target.pie-worker-ssh-target.id
 }
@@ -260,7 +260,7 @@ resource "boundary_alias_target" "pie-ssh-cert-target-okta-alias" {
   count = var.use_okta ? 1 : 0
   name                      = "pie-ssh-okta"
   description               = "The alias for the PIE SSH target with user templated SSH certificate"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "ssh-okta.boundary.lab"
   destination_id            = boundary_target.pie-ssh-cert-target-okta[0].id
 }
@@ -286,7 +286,7 @@ resource "boundary_alias_target" "pie-ssh-cert-target-ldap-alias" {
   count = var.use_okta ? 0 : 1
   name                      = "pie-ssh-ldap"
   description               = "The alias for the PIE SSH target with user templated SSH certificate"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.pie_aws_project.id
   value                     = "ssh-ldap.boundary.lab"
   destination_id            = boundary_target.pie-ssh-cert-target-ldap[0].id
 }
@@ -345,7 +345,7 @@ resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_okta" {
   description         = "Signed SSH Certificate Credential Library for Okta users"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
   path                = "ssh/sign/cert-role" # change to Vault backend path
-  username            = "{{coalesce truncateFrom .User.Email \"@\" .Account.LoginName}}"
+  username            = "{{truncateFrom .User.Email \"@\"}}"
   key_type            = "ecdsa"
   key_bits            = 384
   extensions = {
@@ -429,7 +429,7 @@ resource "boundary_target" "dev-db-target" {
 resource "boundary_alias_target" "dev-db-target-alias" {
   name                      = "dev-db"
   description               = "The alias for the Dev database with Vault credentials"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.dev_aws_project.id
   value                     = "db.boundary.lab"
   destination_id            = boundary_target.dev-db-target.id
 }
@@ -527,7 +527,7 @@ resource "boundary_target" "it-rdp-target" {
 resource "boundary_alias_target" "it-rdp-target-alias" {
   name                      = "it-rdp"
   description               = "The alias for the IT RDP target with user supplied credentials"
-  scope_id                  = "global"
+  scope_id                  = boundary_scope.it_aws_project.id
   value                     = "rdp.boundary.lab"
   destination_id            = boundary_target.it-rdp-target.id
 }
