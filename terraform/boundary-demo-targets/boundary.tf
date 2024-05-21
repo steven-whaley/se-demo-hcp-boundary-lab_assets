@@ -232,7 +232,7 @@ resource "boundary_target" "pie-worker-ssh-target" {
 }
 
 resource "boundary_alias_target" "pie-worker-ssh-target-alias" {
-  name                      = "pie-ssh"
+  name                      = "pie-worker-ssh"
   description               = "The alias for the Boundary worker with user supplied keys"
   scope_id                  = "global"
   value                     = "worker.boundary.lab"
@@ -257,11 +257,12 @@ resource "boundary_target" "pie-ssh-cert-target-okta" {
 }
 
 resource "boundary_alias_target" "pie-ssh-cert-target-okta-alias" {
+  count = var.use_okta ? 1 : 0
   name                      = "pie-ssh-okta"
   description               = "The alias for the PIE SSH target with user templated SSH certificate"
   scope_id                  = "global"
   value                     = "ssh-okta.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target-okta.id
+  destination_id            = boundary_target.pie-ssh-cert-target-okta[0].id
 }
 
 resource "boundary_target" "pie-ssh-cert-target-ldap" {
@@ -282,11 +283,12 @@ resource "boundary_target" "pie-ssh-cert-target-ldap" {
 }
 
 resource "boundary_alias_target" "pie-ssh-cert-target-ldap-alias" {
+  count = var.use_okta ? 0 : 1
   name                      = "pie-ssh-ldap"
   description               = "The alias for the PIE SSH target with user templated SSH certificate"
   scope_id                  = "global"
   value                     = "ssh-ldap.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target-ldap.id
+  destination_id            = boundary_target.pie-ssh-cert-target-ldap[0].id
 }
 
 resource "boundary_target" "pie-ssh-cert-target-admin" {
