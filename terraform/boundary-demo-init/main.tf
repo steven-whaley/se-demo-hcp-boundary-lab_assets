@@ -112,58 +112,60 @@ resource "aws_instance" "vault-server" {
   }
 }
 
-#Set up HCP Log Streaming
-data "aws_iam_policy_document" "allow_hcp_to_stream_logs" {
- statement {
-   effect = "Allow"
-   actions = [
-     "logs:PutLogEvents",       # To write logs to cloudwatch
-     "logs:DescribeLogStreams", # To get the latest sequence token of a log stream
-     "logs:DescribeLogGroups",  # To check if a log group already exists
-     "logs:CreateLogGroup",     # To create a new log group
-     "logs:CreateLogStream"     # To create a new log stream
-   ]
-   resources = [
-     "*"
-   ]
- }
-}
+# Set up HCP Log Streaming
+# Commented out for now as it's in beta and does not capture product logs
 
-data "aws_iam_policy_document" "trust_policy" {
- statement {
-   sid     = "HCPLogStreaming"
-   effect  = "Allow"
-   actions = ["sts:AssumeRole"]
-   principals {
-     identifiers = ["711430482607"]
-     type        = "AWS"
-   }
-   condition {
-     test     = "StringEquals"
-     variable = "sts:ExternalId"
-     values = [
-       "boundary-lab-hcp-logs"
-     ]
-   }
- }
-}
+# data "aws_iam_policy_document" "allow_hcp_to_stream_logs" {
+#  statement {
+#    effect = "Allow"
+#    actions = [
+#      "logs:PutLogEvents",       # To write logs to cloudwatch
+#      "logs:DescribeLogStreams", # To get the latest sequence token of a log stream
+#      "logs:DescribeLogGroups",  # To check if a log group already exists
+#      "logs:CreateLogGroup",     # To create a new log group
+#      "logs:CreateLogStream"     # To create a new log stream
+#    ]
+#    resources = [
+#      "*"
+#    ]
+#  }
+# }
 
-resource "aws_iam_role" "role" {
- name               = "hcp-log-streaming"
- description        = "iam role that allows hcp to send logs to cloudwatch logs"
- assume_role_policy = data.aws_iam_policy_document.trust_policy.json
- inline_policy {
-   name   = "inline-policy"
-   policy = data.aws_iam_policy_document.allow_hcp_to_stream_logs.json
- }
-}
+# data "aws_iam_policy_document" "trust_policy" {
+#  statement {
+#    sid     = "HCPLogStreaming"
+#    effect  = "Allow"
+#    actions = ["sts:AssumeRole"]
+#    principals {
+#      identifiers = ["711430482607"]
+#      type        = "AWS"
+#    }
+#    condition {
+#      test     = "StringEquals"
+#      variable = "sts:ExternalId"
+#      values = [
+#        "boundary-lab-hcp-logs"
+#      ]
+#    }
+#  }
+# }
 
-resource "hcp_log_streaming_destination" "hcp_logs_cloudwatch" {
-  name = "HCP Logs"
-  cloudwatch = {
-    external_id    = "boundary-lab-hcp-logs"
-    region         = "us-west-2"
-    role_arn       = aws_iam_role.role.arn
-    log_group_name = "hcp_logs"
-  }
-}
+# resource "aws_iam_role" "role" {
+#  name               = "hcp-log-streaming"
+#  description        = "iam role that allows hcp to send logs to cloudwatch logs"
+#  assume_role_policy = data.aws_iam_policy_document.trust_policy.json
+#  inline_policy {
+#    name   = "inline-policy"
+#    policy = data.aws_iam_policy_document.allow_hcp_to_stream_logs.json
+#  }
+# }
+
+# resource "hcp_log_streaming_destination" "hcp_logs_cloudwatch" {
+#   name = "HCP Logs"
+#   cloudwatch = {
+#     external_id    = "boundary-lab-hcp-logs"
+#     region         = "us-west-2"
+#     role_arn       = aws_iam_role.role.arn
+#     log_group_name = "hcp_logs"
+#   }
+# }
