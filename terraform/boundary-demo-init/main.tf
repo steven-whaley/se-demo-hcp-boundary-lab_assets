@@ -159,11 +159,11 @@ resource "aws_iam_role" "role" {
 }
 
 resource "hcp_log_streaming_destination" "hcp_logs_cloudwatch" {
-  name = "HCP_LOGS"
+  name = "HCP Logs"
   cloudwatch = {
     external_id    = "boundary-lab-hcp-logs"
     region         = "us-west-2"
     role_arn       = aws_iam_role.role.arn
-    log_group_name = "HCP Logs"
+    log_group_name = "hcp_logs"
   }
 }
