@@ -239,56 +239,28 @@ resource "boundary_alias_target" "pie-worker-ssh-target-alias" {
   destination_id            = boundary_target.pie-worker-ssh-target.id
 }
 
-resource "boundary_target" "pie-ssh-cert-target-okta" {
-  count = var.use_okta ? 1 : 0
+resource "boundary_target" "pie-ssh-cert-target" {
   type                     = "ssh"
   name                     = "pie-ssh-cert-target"
-  description              = "Connect to the SSH server using OIDC username.  Only works for OIDC users."
+  description              = "Connect to the SSH server using OIDC or LDAP username."
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
   address = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
-    boundary_credential_library_vault_ssh_certificate.ssh_cert_okta.id
+    boundary_credential_library_vault_ssh_certificate.ssh_cert.id
   ]
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
  enable_session_recording = true
  storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
 }
 
-resource "boundary_alias_target" "pie-ssh-cert-target-okta-alias" {
-  count = var.use_okta ? 1 : 0
-  name                      = "pie-ssh-okta"
+resource "boundary_alias_target" "pie-ssh-cert-target-alias" {
+  name                      = "pie-ssh-user"
   description               = "The alias for the PIE SSH target with user templated SSH certificate"
   scope_id                  = "global"
-  value                     = "ssh-okta.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target-okta[0].id
-}
-
-resource "boundary_target" "pie-ssh-cert-target-ldap" {
-  count = var.use_okta ? 0 : 1
-  type                     = "ssh"
-  name                     = "pie-ssh-cert-target"
-  description              = "Connect to the SSH server using LDAP username.  Only works for LDAP users."
-  scope_id                 = boundary_scope.pie_aws_project.id
-  session_connection_limit = -1
-  default_port             = 22
-  address = aws_instance.k8s_cluster.private_ip
-  injected_application_credential_source_ids = [
-    boundary_credential_library_vault_ssh_certificate.ssh_cert_ldap.id
-  ]
-  egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
- enable_session_recording = true
- storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
-}
-
-resource "boundary_alias_target" "pie-ssh-cert-target-ldap-alias" {
-  count = var.use_okta ? 0 : 1
-  name                      = "pie-ssh-ldap"
-  description               = "The alias for the PIE SSH target with user templated SSH certificate"
-  scope_id                  = "global"
-  value                     = "ssh-ldap.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target-ldap[0].id
+  value                     = "ssh-user.boundary.lab"
+  destination_id            = boundary_target.pie-ssh-cert-target.id
 }
 
 resource "boundary_target" "pie-ssh-cert-target-admin" {
@@ -340,25 +312,12 @@ resource "boundary_credential_library_vault" "k8s-admin-role" {
 }
 
 # Credential Library to provide SSH certificate for logged in user either through Okta or LDAP
-resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_okta" {
-  name                = "ssh_cert_okta"
-  description         = "Signed SSH Certificate Credential Library for Okta users"
-  credential_store_id = boundary_credential_store_vault.pie_vault.id
-  path                = "ssh/sign/cert-role" # change to Vault backend path
-  username            = "{{truncateFrom .User.Email \"@\"}}"
-  key_type            = "ecdsa"
-  key_bits            = 384
-  extensions = {
-    permit-pty = ""
-  }
-}
-
-resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert_ldap" {
-  name                = "ssh_cert_ldap"
+resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert" {
+  name                = "ssh_cert"
   description         = "Signed SSH Certificate Credential Library for LDAP users"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
   path                = "ssh/sign/cert-role" # change to Vault backend path
-  username            = "{{.Account.LoginName}}"
+  username            = "{{coalesce (truncateFrom .User.Name \"@\") (.Account.LoginName)}}"
   key_type            = "ecdsa"
   key_bits            = 384
   extensions = {
