@@ -1,6 +1,6 @@
 output "boundary_admin_password" {
   description = "The Password for the Boundary admin user"
-  value = random_pet.random_password.id
+  value = random_string.admin_password.result
 }
 
 output "boundary_url" {
