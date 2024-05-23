@@ -136,7 +136,7 @@ fi
 if [[ "$use_ldap" == "y" ]]; then
   echo "Setting up the LDAP secrets engine to provide dynamic AD credentials to connect to the Windows target."
   echo "The script will sleep for 5 minutes while waiting for Domain Controller promotion and Certificate Services setup to complete."
-  sleep 360
+  sleep 300
 
   cd ${TF_BASE}/boundary-demo-ad-secrets
   terraform init
