@@ -317,7 +317,7 @@ resource "boundary_credential_library_vault_ssh_certificate" "ssh_cert" {
   description         = "Signed SSH Certificate Credential Library for LDAP users"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
   path                = "ssh/sign/cert-role" # change to Vault backend path
-  username            = "{{coalesce (truncateFrom .User.Name \"@\") (.Account.LoginName)}}"
+  username            = "{{coalesce (truncateFrom .User.Email \"@\") (.Account.LoginName)}}"
   key_type            = "ecdsa"
   key_bits            = 384
   extensions = {
