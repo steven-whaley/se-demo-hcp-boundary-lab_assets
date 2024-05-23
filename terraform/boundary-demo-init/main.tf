@@ -1,8 +1,9 @@
 resource "random_pet" "pet_name" {
 }
 
-resource "random_pet" "random_password" {
-  length = 2
+resource "random_string" "admin_password" {
+  length           = 8
+  special          = false
 }
 
 resource "random_string" "ldap_pass" {
@@ -21,7 +22,7 @@ resource "hcp_boundary_cluster" "boundary-demo" {
   project_id = hcp_project.project.resource_id
   cluster_id = "instruqt-${random_pet.pet_name.id}"
   username   = "admin"
-  password   = random_pet.random_password.id
+  password   = random_string.admin_password.result
   tier       = "PLUS"
 }
 
