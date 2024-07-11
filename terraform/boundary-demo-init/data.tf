@@ -25,4 +25,9 @@ data "aws_ami" "aws_linux_hvm2" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+
+  filter {
+    name  = "architecture"
+    values = ["x86_64"]
+  }
 }
