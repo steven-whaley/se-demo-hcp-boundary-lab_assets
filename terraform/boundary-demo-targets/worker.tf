@@ -123,6 +123,13 @@ module "worker-sec-group" {
       protocol = "tcp"
       description = "Allow Postgres access on exposed port"
       source_security_group_id = module.k8s-sec-group.security_group_id
+    },
+    {
+      from_port = 30080
+      to_port = 30080
+      protocol = "tcp"
+      description = "Allow HTTP to WIki"
+      source_security_group_id = module.k8s-sec-group.security_group_id
     }
   ]
 

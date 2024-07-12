@@ -68,5 +68,12 @@ module "k8s-sec-group" {
       description = "Allow K8s access on K8s target"
       source_security_group_id = data.terraform_remote_state.boundary_demo_init.outputs.vault_sec_group
     },
+    {
+      from_port = 30080
+      to_port = 30080
+      protocol = "tcp"
+      description = "Allow web access to Wiki from worker"
+      source_security_group_id = module.worker-sec-group.security_group_id
+    },
   ]
 }
