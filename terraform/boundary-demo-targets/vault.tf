@@ -121,21 +121,6 @@ resource "vault_policy" "db-policy" {
   policy    = data.vault_policy_document.db-secrets.hcl
 }
 
-# Create policies to read AWS secrets
-## read from pie_role
-data "vault_policy_document" "pie-aws-secrets" {
-  rule {
-    path         = "${vault_aws_secret_backend.aws.path}/creds/pie_role"
-    capabilities = ["read"]
-  }
-}
-
-resource "vault_policy" "pie-aws-policy" {
-  namespace = vault_namespace.pie.path_fq
-  name      = "pie-aws-policy"
-  policy    = data.vault_policy_document.pie-aws-secrets.hcl
-}
-
 ##### Create Token roles and Tokens #####
 
 # Token Role for Boundary PIE Credential Store
@@ -147,7 +132,6 @@ resource "vault_token_auth_backend_role" "boundary-token-role-pie" {
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name, 
     vault_policy.ssh-cert-role.name,
-    vault_policy.pie-aws-policy.name,
     ]
   orphan           = true
 }
@@ -160,7 +144,6 @@ resource "vault_token" "boundary-token-pie" {
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name,
     vault_policy.ssh-cert-role.name,
-    vault_policy.pie-aws-policy.name,
     ]
   no_parent = true
   renewable = true
@@ -299,15 +282,25 @@ resource "vault_database_secrets_mount" "postgres" {
 }
 
 # Create role for getting dynamic DB secrets
-resource "vault_database_secret_backend_role" "db1" {
+# resource "vault_database_secret_backend_role" "db1" {
+#   namespace = vault_namespace.dev.path_fq
+#   name      = "db1"
+#   backend   = vault_database_secrets_mount.postgres.path
+#   db_name   = vault_database_secrets_mount.postgres.postgresql[0].name
+#   creation_statements = [
+#     "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+#     "GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";",
+#   ]
+# }
+
+resource "vault_database_secret_backend_static_role" "period_role" {
   namespace = vault_namespace.dev.path_fq
-  name      = "db1"
-  backend   = vault_database_secrets_mount.postgres.path
-  db_name   = vault_database_secrets_mount.postgres.postgresql[0].name
-  creation_statements = [
-    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
-    "GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";",
-  ]
+  backend             = vault_database_secrets_mount.postgres.path
+  name                = "dev_role"
+  db_name             = vault_database_secrets_mount.postgres.postgresql[0].name
+  username            = "dev_user"
+  rotation_period     = "14400"
+  rotation_statements = ["ALTER USER \"{{name}}\" WITH PASSWORD '{{password}}';"]
 }
 
 ##### Create the SSH Cert secrets Engine #####
@@ -353,32 +346,4 @@ resource "vault_ssh_secret_backend_role" "cert-role" {
   allowed_users      = "*"
   ttl                = "1800"
   cidr_list          = "0.0.0.0/0"
-}
-
-# Create AWS Secrets Engine to generate IAM credentials
-resource "vault_aws_secret_backend" "aws" {
-  namespace = vault_namespace.pie.path_fq
-  region = var.region
-}
-
-resource "vault_aws_secret_backend_role" "pie_role" {
-  namespace = vault_namespace.pie.path_fq
-  backend = vault_aws_secret_backend.aws.path
-  name    = "pie_role"
-  credential_type = "iam_user"
-
-  policy_document = <<EOT
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:*", "s3:*", "iam:*"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOT
 }

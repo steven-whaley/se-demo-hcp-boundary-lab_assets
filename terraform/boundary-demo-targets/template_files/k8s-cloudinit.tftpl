@@ -23,7 +23,9 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC=\"server\" sh -
 # Set up postgresql pod
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
-KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install k8s-postgres --set auth.postgresPassword=${password} --set primary.service.type="NodePort" --set primary.service.nodePorts.postgresql="30932" bitnami/postgresql
+KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install k8s-postgres --set auth.postgresPassword=${password} \ 
+  --set primary.service.type="NodePort" --set primary.service.nodePorts.postgresql="30932" bitnami/postgresql \
+  --set auth.username "dev_user" --set auth.password ${password}
 
 # Set up DokuWiki Pod
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install wiki --set service.type="NodePort" --set service.nodePorts.http="30080" --set service.nodePorts.https="30443" bitnami/dokuwiki
