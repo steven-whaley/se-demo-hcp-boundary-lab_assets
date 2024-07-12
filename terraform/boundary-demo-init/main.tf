@@ -107,10 +107,69 @@ resource "aws_instance" "vault-server" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [module.vault-security-group.security_group_id]
   user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license=var.vault_license, ldap_pass=random_string.ldap_pass.id })
-
+  iam_instance_profile = aws_iam_instance_profile.vault_server_profile.name
   tags = {
     Name = "vault-demo"
   }
+}
+
+#Create associated policy and instance profile for Vault server to set up AWS Secrets Engine
+data "aws_iam_policy_document" "vault_server_policy" {
+  statement {
+    effect    = "Allow"
+    actions   = [
+        "iam:AttachUserPolicy",
+        "iam:CreateAccessKey",
+        "iam:CreateUser",
+        "iam:DeleteAccessKey",
+        "iam:DeleteUser",
+        "iam:DeleteUserPolicy",
+        "iam:DetachUserPolicy",
+        "iam:GetUser",
+        "iam:ListAccessKeys",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListGroupsForUser",
+        "iam:ListUserPolicies",
+        "iam:PutUserPolicy",
+        "iam:AddUserToGroup",
+        "iam:RemoveUserFromGroup"
+      ]
+    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/vault-*"]
+  }
+}
+
+resource "aws_iam_policy" "vault_server_policy" {
+  name        = "VaultServerPolicy"
+  description = "Policy to allow the vault server to create AWS IAM Credentials"
+  policy      = data.aws_iam_policy_document.vault_server_policy.json
+}
+
+data "aws_iam_policy_document" "vault_assume_role_policy" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "vault_server_role" {
+  name               = "VaultServerRole"
+  assume_role_policy = data.aws_iam_policy_document.vault_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "vault_policy_attach" {
+  role       = aws_iam_role.vault_server_role.name
+  policy_arn = aws_iam_policy.vault_server_policy.arn
+}
+
+resource "aws_iam_instance_profile" "vault_server_profile" {
+  name = "VaultServerProfile"
+  role = aws_iam_role.vault_server_role.name
 }
 
 # Set up HCP Log Streaming

@@ -121,6 +121,21 @@ resource "vault_policy" "db-policy" {
   policy    = data.vault_policy_document.db-secrets.hcl
 }
 
+# Create policies to read AWS secrets
+## read from pie_role
+data "vault_policy_document" "pie-aws-secrets" {
+  rule {
+    path         = "${vault_aws_secrets_backend.aws.path}/creds/pie_role"
+    capabilities = ["read"]
+  }
+}
+
+resource "vault_policy" "pie-aws-policy" {
+  namespace = vault_namespace.pie.path_fq
+  name      = "pie-aws-policy"
+  policy    = data.vault_policy_document.pie-aws-secrets.hcl
+}
+
 ##### Create Token roles and Tokens #####
 
 # Token Role for Boundary PIE Credential Store
@@ -131,7 +146,8 @@ resource "vault_token_auth_backend_role" "boundary-token-role-pie" {
     vault_policy.boundary-token-policy-pie.name, 
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name, 
-    vault_policy.ssh-cert-role.name
+    vault_policy.ssh-cert-role.name,
+    vault_policy.vault_policy.pie-aws-policy.name,
     ]
   orphan           = true
 }
@@ -143,7 +159,8 @@ resource "vault_token" "boundary-token-pie" {
     vault_policy.boundary-token-policy-pie.name, 
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name,
-    vault_policy.ssh-cert-role.name
+    vault_policy.ssh-cert-role.name,
+    vault_policy.vault_policy.pie-aws-policy.name,
     ]
   no_parent = true
   renewable = true
@@ -336,4 +353,35 @@ resource "vault_ssh_secret_backend_role" "cert-role" {
   allowed_users      = "*"
   ttl                = "1800"
   cidr_list          = "0.0.0.0/0"
+}
+
+# Create AWS Secrets Engine to generate IAM credentials
+resource "vault_aws_secret_backend" "aws" {
+  namespace = vault_namespace.pie.path_fq
+  region = var.region
+}
+
+resource "vault_aws_secret_backend_role" "pie_role" {
+  namespace = vault_namespace.pie.path_fq
+  backend = vault_aws_secret_backend.aws.path
+  name    = "pie_role"
+  credential_type = "iam_user"
+
+  policy_document = <<EOT
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "s3:*",
+        "iam:*",
+        "
+      ]
+      "Resource": "*"
+    }
+  ]
+}
+EOT
 }
