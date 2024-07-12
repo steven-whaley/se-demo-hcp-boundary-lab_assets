@@ -475,7 +475,6 @@ resource "boundary_target" "it-rdp-target" {
   scope_id                 = boundary_scope.it_aws_project.id
   session_connection_limit = -1
   default_port             = 3389
-  default_client_port = 54389
 
   host_source_ids = [
     boundary_host_set_plugin.it_set.id

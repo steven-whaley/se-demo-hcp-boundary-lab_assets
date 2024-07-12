@@ -118,7 +118,6 @@ resource "boundary_target" "it-rdp-target-admin" {
   scope_id                 = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id
   session_connection_limit = -1
   default_port             = 3389
-  default_client_port = 53389
   host_source_ids = [
     data.terraform_remote_state.boundary_demo_targets.outputs.it_host_set_id
   ]  
