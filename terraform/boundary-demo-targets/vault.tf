@@ -110,7 +110,7 @@ resource "vault_policy" "ssh-cert-role" {
 # Create Policy to read Dynamic DB secrets
 data "vault_policy_document" "db-secrets" {
   rule {
-    path         = "${vault_database_secrets_mount.postgres.path}/creds/db1"
+    path         = "${vault_database_secrets_mount.postgres.path}/static-roles/dev_role"
     capabilities = ["read"]
   }
 }
