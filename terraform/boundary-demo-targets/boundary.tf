@@ -491,6 +491,27 @@ resource "boundary_alias_target" "it-rdp-target-alias" {
   destination_id            = boundary_target.it-rdp-target.id
 }
 
+# Create the Web Target in the IT AWS Project
+
+resource "boundary_target" "it-wiki-target" {
+  type                     = "tcp"
+  name                     = "it-wiki-target"
+  description              = "Connect to the internal wiki web site"
+  scope_id                 = boundary_scope.it_aws_project.id
+  session_connection_limit = -1
+  default_port             = 30080
+  address                  = aws_instance.k8s_cluster.private_ip
+  egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
+}
+
+resource "boundary_alias_target" "it-wiki-target-alias" {
+  name                      = "it-wiki"
+  description               = "The alias for the internal wiki web site"
+  scope_id                  = "global"
+  value                     = "wiki.boundary.lab"
+  destination_id            = boundary_target.it-wiki-target.id
+}
+
 # Create Session Recording Bucket
 # Delay creation to give the worker time to register
 
