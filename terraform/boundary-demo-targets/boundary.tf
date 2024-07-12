@@ -295,7 +295,7 @@ resource "boundary_target" "pie-aws-console-target" {
   session_connection_limit = -1
   default_port             = 22
   address = "aws.amazon.com"
-  injected_application_credential_source_ids = [
+  brokered_credential_source_ids = [
     boundary_credential_library_vault.aws-creds.id
   ]
   #egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
