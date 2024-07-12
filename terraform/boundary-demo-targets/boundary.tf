@@ -530,6 +530,11 @@ resource "boundary_role" "list_aliases" {
   name          = "list_aliases"
   description   = "Role to allow listing aliases"
   principal_ids = [boundary_managed_group_ldap.pie_users[0].id, boundary_managed_group_ldap.dev_users[0].id, boundary_managed_group_ldap.it_users[0].id]
-  grant_strings = ["ids=*;type=alias;actions=list,read"]
+  grant_strings = [
+    "ids=*;type=auth-token;actions=read:self",
+    "ids=*;type=alias;actions=read",
+    "type=alias;actions=list",
+    "ids={{.User.Id}};type=user;actions=list-resolvable-aliases"
+  ]
   scope_id      = "global"
 }
