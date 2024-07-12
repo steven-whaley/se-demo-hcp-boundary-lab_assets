@@ -287,28 +287,6 @@ resource "boundary_alias_target" "pie-ssh-cert-target-admin-alias" {
   destination_id            = boundary_target.pie-ssh-cert-target-admin.id
 }
 
-resource "boundary_target" "pie-aws-console-target" {
-  type                     = "tcp"
-  name                     = "pie-aws-console-target"
-  description              = "Connect to the AWS web console through Boundary with Vault creds"
-  scope_id                 = boundary_scope.pie_aws_project.id
-  session_connection_limit = -1
-  default_port             = 22
-  address = "aws.amazon.com"
-  brokered_credential_source_ids = [
-    boundary_credential_library_vault.aws-creds.id
-  ]
-  #egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
-}
-
-resource "boundary_alias_target" "pie-aws-console-target-alias" {
-  name                      = "pie-aws-console-target"
-  description               = "The alias for the aws console target"
-  scope_id                  = "global"
-  value                     = "aws.boundary.lab"
-  destination_id            = boundary_target.pie-aws-console-target.id
-}
-
 # Create PIE Vault Credential Store
 resource "boundary_credential_store_vault" "pie_vault" {
   name        = "PIE Vault"
@@ -370,16 +348,6 @@ resource "boundary_credential_library_vault" "k8s-cert" {
   path                = "secrets/data/k8s-cluster" 
   http_method         = "get"
 }
-
-# Credential Library to provide AWS Credentials
-resource "boundary_credential_library_vault" "aws-creds" {
-  name                = "AWS pie_role creds"
-  description         = "Credentials from the Vault AWS Secrets Engine for the PIE role"
-  credential_store_id = boundary_credential_store_vault.pie_vault.id
-  path                = "aws/creds/pie_role" 
-  http_method         = "get"
-}
-
 
 ##### Dev Org Resources #####
 
