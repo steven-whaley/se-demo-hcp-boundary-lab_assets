@@ -125,7 +125,7 @@ resource "vault_policy" "db-policy" {
 ## read from pie_role
 data "vault_policy_document" "pie-aws-secrets" {
   rule {
-    path         = "${vault_aws_secrets_backend.aws.path}/creds/pie_role"
+    path         = "${vault_aws_secret_backend.aws.path}/creds/pie_role"
     capabilities = ["read"]
   }
 }
@@ -147,7 +147,7 @@ resource "vault_token_auth_backend_role" "boundary-token-role-pie" {
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name, 
     vault_policy.ssh-cert-role.name,
-    vault_policy.vault_policy.pie-aws-policy.name,
+    vault_policy.pie-aws-policy.name,
     ]
   orphan           = true
 }
@@ -377,7 +377,6 @@ resource "vault_aws_secret_backend_role" "pie_role" {
         "ec2:*",
         "s3:*",
         "iam:*",
-        "
       ]
       "Resource": "*"
     }
