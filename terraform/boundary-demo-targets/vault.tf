@@ -160,7 +160,7 @@ resource "vault_token" "boundary-token-pie" {
     vault_policy.k8s-secret-policy.name, 
     vault_policy.kv-access.name,
     vault_policy.ssh-cert-role.name,
-    vault_policy.vault_policy.pie-aws-policy.name,
+    vault_policy.pie-aws-policy.name,
     ]
   no_parent = true
   renewable = true
@@ -377,7 +377,7 @@ resource "vault_aws_secret_backend_role" "pie_role" {
         "ec2:*",
         "s3:*",
         "iam:*",
-      ]
+      ],
       "Resource": "*"
     }
   ]
