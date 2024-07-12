@@ -374,9 +374,7 @@ resource "vault_aws_secret_backend_role" "pie_role" {
     {
       "Effect": "Allow",
       "Action": [
-        "ec2:*",
-        "s3:*",
-        "iam:*",
+        "ec2:*", "s3:*", "iam:*"
       ],
       "Resource": "*"
     }
