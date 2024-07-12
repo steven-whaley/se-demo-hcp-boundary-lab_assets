@@ -277,7 +277,7 @@ resource "vault_database_secrets_mount" "postgres" {
     password          = random_password.db_password.result
     connection_url    = "postgresql://{{username}}:{{password}}@${aws_instance.k8s_cluster.private_ip}:30932/postgres"
     verify_connection = true
-    allowed_roles     = ["db1"]
+    allowed_roles     = ["dev_role"]
   }
 }
 
