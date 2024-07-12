@@ -7,6 +7,8 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_ami" "aws_linux_hvm2" {
   most_recent = true
   owners      = ["amazon"]
