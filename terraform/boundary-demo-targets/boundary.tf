@@ -201,6 +201,14 @@ resource "boundary_alias_target" "pie-k8s-target-alias" {
   destination_id            = boundary_target.pie-k8s-target.id
 }
 
+resource "boundary_alias_target" "pie-k8s-target-alias" {
+  name                      = "pie-k8s-svcname"
+  description               = "The alias for the PIE k8s cluster with user credentials, for use with transparent sessions"
+  scope_id                  = "global"
+  value                     = "kubernetes.default.svc"
+  destination_id            = boundary_target.pie-k8s-target.id
+}
+
 resource "boundary_target" "pie-ssh-target" {
   type                     = "tcp"
   name                     = "pie-ssh-target"
