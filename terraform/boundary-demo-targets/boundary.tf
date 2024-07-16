@@ -421,6 +421,25 @@ resource "boundary_credential_library_vault" "database" {
   credential_type     = "username_password"
 }
 
+# Create github.com target and alias
+resource "boundary_target" "dev-github-target" {
+  type                     = "tcp"
+  name                     = "dev-github-target"
+  description              = "Connect to GitHub.com through Boundary"
+  scope_id                 = boundary_scope.dev_aws_project.id
+  session_connection_limit = -1
+  default_port             = 443
+  address                  = "github.com"
+}
+
+resource "boundary_alias_target" "dev-github-target-alias" {
+  name                      = "dev-github"
+  description               = "The alias for the connecting to GitHub.com through Boundary"
+  scope_id                  = "global"
+  value                     = "github.com"
+  destination_id            = boundary_target.dev-github-target.id
+}
+
 ##### IT Org Resources #####
 
 # Create Organization Scope for Corporate IT
