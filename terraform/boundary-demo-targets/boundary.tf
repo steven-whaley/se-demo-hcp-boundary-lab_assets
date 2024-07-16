@@ -201,7 +201,7 @@ resource "boundary_alias_target" "pie-k8s-target-alias" {
   destination_id            = boundary_target.pie-k8s-target.id
 }
 
-resource "boundary_alias_target" "pie-k8s-target-alias" {
+resource "boundary_alias_target" "pie-k8s-svcname-target-alias" {
   name                      = "pie-k8s-svcname"
   description               = "The alias for the PIE k8s cluster with user credentials, for use with transparent sessions"
   scope_id                  = "global"
