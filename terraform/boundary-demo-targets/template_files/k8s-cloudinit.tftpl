@@ -1,5 +1,7 @@
 #!/bin/sh
 yum update -y
+amazon-linux-extras enable selinux-ng
+yum install container-selinux
 
 # Set up SSH Certificate Auth
 echo "TrustedUserCAKeys /etc/ssh/ca-key.pub" >> /etc/ssh/sshd_config
