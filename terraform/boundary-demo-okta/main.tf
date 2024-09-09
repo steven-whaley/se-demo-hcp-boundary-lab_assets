@@ -150,12 +150,12 @@ resource "boundary_role" "okta_dev_role" {
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
     "ids=*;type=target;actions=list,authorize-session,read",
-    "ids=*;type=host-set;actions=list",
+    "ids=*;type=host-set;actions=list,read",
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
   scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.dev_org_id
-  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.dev_project_id
+  grant_scope_ids = ["children"]
 }
 
 # Create the managed group in boundary for PIE users
@@ -172,12 +172,12 @@ resource "boundary_role" "okta_pie_role" {
   grant_strings = [
     "ids=*;type=session;actions=list,read:self,cancel:self",
     "ids=*;type=target;actions=list,authorize-session,read",
-    "ids=*;type=host-set;actions=list",
+    "ids=*;type=host-set;actions=list,read",
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
   scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.pie_org_id
-  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.pie_project_id
+  grant_scope_ids = ["children"]
 }
 
 # Create the managed group in boundary for IT users
@@ -199,7 +199,7 @@ resource "boundary_role" "okta_it_role" {
     "ids=*;type=host-catalog;actions=list,read",
   ]
   scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.it_org_id
-  grant_scope_id = data.terraform_remote_state.boundary_demo_targets.outputs.it_project_id
+  grant_scope_ids = ["children"]
 }
 
 # Set up Permissions to list aliases
