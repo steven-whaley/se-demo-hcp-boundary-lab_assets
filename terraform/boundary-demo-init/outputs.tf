@@ -1,6 +1,6 @@
 output "boundary_admin_password" {
   description = "The Password for the Boundary admin user"
-  value = random_string.admin_password.result
+  value       = random_string.admin_password.result
 }
 
 output "boundary_url" {
@@ -15,7 +15,7 @@ output "vault_pub_url" {
 
 output "vault_priv_url" {
   description = "The private URL of the Vault server"
-  value = "http://${aws_instance.vault-server.private_ip}:8200"
+  value       = "http://${aws_instance.vault-server.private_ip}:8200"
 }
 
 output "boundary_admin_auth_method" {
@@ -29,30 +29,30 @@ output "hcp_project_id" {
 
 output "vault_password" {
   description = "The vault terraform user password"
-  value = random_string.vault_pass.id
+  value       = random_string.vault_pass.id
 }
 
 output "vpc_id" {
   description = "The ID of the VPC"
-  value = module.boundary-demo-vpc.vpc_id
+  value       = module.boundary-demo-vpc.vpc_id
 }
 
 output "priv_subnet_id" {
   description = "The ID of the first private subnet"
-  value = module.boundary-demo-vpc.private_subnets[0]
+  value       = module.boundary-demo-vpc.private_subnets[0]
 }
 
 output "vault_sec_group" {
   description = "The Security Group ID for the Vault Server"
-  value = module.vault-security-group.security_group_id
+  value       = module.vault-security-group.security_group_id
 }
 
 output "ldap_password" {
   description = "The Password for the ldap_global_user Boundary User"
-  value = random_string.ldap_pass.id
+  value       = random_string.ldap_pass.id
 }
 
 output "ldap_address" {
   description = "The IP address of the LDAP server"
-  value = aws_instance.vault-server.public_ip
+  value       = aws_instance.vault-server.public_ip
 }

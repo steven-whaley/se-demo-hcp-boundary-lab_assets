@@ -1,6 +1,6 @@
 variable "admin_pass" {
   type        = string
-  default = "LongPassword123"
+  default     = "LongPassword123"
   description = "The password to set on the windows target for the admin user"
 }
 
@@ -17,6 +17,6 @@ variable "public_key" {
 
 variable "use_okta" {
   description = "Variable that controls whether we are using Okta as part of the demo or not"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }

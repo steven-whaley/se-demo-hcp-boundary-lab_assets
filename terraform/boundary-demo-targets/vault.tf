@@ -125,26 +125,26 @@ resource "vault_policy" "db-policy" {
 
 # Token Role for Boundary PIE Credential Store
 resource "vault_token_auth_backend_role" "boundary-token-role-pie" {
-  namespace        = vault_namespace.pie.path_fq
-  role_name        = "boundary-controller-role-pie"
+  namespace = vault_namespace.pie.path_fq
+  role_name = "boundary-controller-role-pie"
   allowed_policies = [
-    vault_policy.boundary-token-policy-pie.name, 
-    vault_policy.k8s-secret-policy.name, 
-    vault_policy.kv-access.name, 
+    vault_policy.boundary-token-policy-pie.name,
+    vault_policy.k8s-secret-policy.name,
+    vault_policy.kv-access.name,
     vault_policy.ssh-cert-role.name,
-    ]
-  orphan           = true
+  ]
+  orphan = true
 }
 
 resource "vault_token" "boundary-token-pie" {
   namespace = vault_namespace.pie.path_fq
   role_name = vault_token_auth_backend_role.boundary-token-role-pie.role_name
-  policies  = [
-    vault_policy.boundary-token-policy-pie.name, 
-    vault_policy.k8s-secret-policy.name, 
+  policies = [
+    vault_policy.boundary-token-policy-pie.name,
+    vault_policy.k8s-secret-policy.name,
     vault_policy.kv-access.name,
     vault_policy.ssh-cert-role.name,
-    ]
+  ]
   no_parent = true
   renewable = true
   ttl       = "24h"
@@ -195,17 +195,17 @@ resource "time_sleep" "wait_for_k8s" {
 
 data "aws_ssm_parameter" "cert" {
   depends_on = [time_sleep.wait_for_k8s, aws_ssm_parameter.cert]
-  name = "cert"
+  name       = "cert"
 }
 
 data "aws_ssm_parameter" "token" {
   depends_on = [time_sleep.wait_for_k8s, aws_ssm_parameter.token]
-  name = "token"
+  name       = "token"
 }
 
 # Create the backend
 resource "vault_kubernetes_secret_backend" "config" {
-  namespace = vault_namespace.pie.path_fq
+  namespace                 = vault_namespace.pie.path_fq
   path                      = "kubernetes"
   description               = "kubernetes secrets engine"
   default_lease_ttl_seconds = 600
@@ -218,24 +218,24 @@ resource "vault_kubernetes_secret_backend" "config" {
 
 # Create the cluster-admin role
 resource "vault_kubernetes_secret_backend_role" "cluster_admin_role" {
-  namespace = vault_namespace.pie.path_fq
+  namespace                     = vault_namespace.pie.path_fq
   backend                       = vault_kubernetes_secret_backend.config.path
   name                          = "cluster-admin-role"
   allowed_kubernetes_namespaces = ["*"]
   token_max_ttl                 = 600
   token_default_ttl             = 600
-  kubernetes_role_type = "ClusterRole"
+  kubernetes_role_type          = "ClusterRole"
   kubernetes_role_name          = "cluster-admin"
 
   extra_annotations = {
-    env      = "boundary demo"
+    env = "boundary demo"
   }
 }
 
 ##### Create the KV Secrets Engine #####
 # Mount the engine
 resource "vault_mount" "secrets" {
-  namespace = vault_namespace.pie.path_fq
+  namespace   = vault_namespace.pie.path_fq
   path        = "secrets"
   type        = "kv"
   options     = { version = "2" }
@@ -244,7 +244,7 @@ resource "vault_mount" "secrets" {
 
 # Tune the engine
 resource "vault_kv_secret_backend_v2" "secrets" {
-  namespace = vault_namespace.pie.path_fq
+  namespace            = vault_namespace.pie.path_fq
   mount                = vault_mount.secrets.path
   max_versions         = 5
   delete_version_after = 12600
@@ -254,8 +254,8 @@ resource "vault_kv_secret_backend_v2" "secrets" {
 # Add K8s cert to KV Secrets store
 resource "vault_kv_secret_v2" "k8s_ca" {
   namespace = vault_namespace.pie.path_fq
-  mount = vault_mount.secrets.path
-  name = "k8s-cluster"
+  mount     = vault_mount.secrets.path
+  name      = "k8s-cluster"
   data_json = jsonencode(
     {
       ca_crt = data.aws_ssm_parameter.cert.value
@@ -267,9 +267,9 @@ resource "vault_kv_secret_v2" "k8s_ca" {
 
 # Create DB secrets mount
 resource "vault_database_secrets_mount" "postgres" {
-  depends_on = [ time_sleep.wait_for_k8s, aws_instance.k8s_cluster ]
-  namespace = vault_namespace.dev.path_fq
-  path      = "database"
+  depends_on = [time_sleep.wait_for_k8s, aws_instance.k8s_cluster]
+  namespace  = vault_namespace.dev.path_fq
+  path       = "database"
 
   postgresql {
     name              = "postgres"
@@ -294,7 +294,7 @@ resource "vault_database_secrets_mount" "postgres" {
 # }
 
 resource "vault_database_secret_backend_static_role" "period_role" {
-  namespace = vault_namespace.dev.path_fq
+  namespace           = vault_namespace.dev.path_fq
   backend             = vault_database_secrets_mount.postgres.path
   name                = "dev_role"
   db_name             = vault_database_secrets_mount.postgres.postgresql[0].name

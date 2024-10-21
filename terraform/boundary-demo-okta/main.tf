@@ -32,10 +32,10 @@ resource "okta_app_oauth" "okta_app" {
 
 # Create then assign the pie, dev, IT, and global users to groups and groups to the Okta App
 resource "okta_user" "global_user" {
-  first_name = "Global"
-  last_name  = "User"
-  login      = "global_user@boundary.lab"
-  email      = "global_user@dev.null"
+  first_name                = "Global"
+  last_name                 = "User"
+  login                     = "global_user@boundary.lab"
+  email                     = "global_user@dev.null"
   password                  = random_pet.okta_password.id
   expire_password_on_create = false
 }
@@ -114,11 +114,11 @@ resource "okta_app_group_assignment" "it_users" {
 
 resource "okta_user_group_memberships" "global_user" {
   user_id = okta_user.global_user.id
-  groups  = [
+  groups = [
     okta_group.pie_users.id,
     okta_group.dev_users.id,
     okta_group.it_users.id
-    ]
+  ]
 }
 
 # Create the OIDC auth method in boundary linked to the Okta Oauth App
@@ -154,7 +154,7 @@ resource "boundary_role" "okta_dev_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.dev_org_id
+  scope_id        = data.terraform_remote_state.boundary_demo_targets.outputs.dev_org_id
   grant_scope_ids = ["children"]
 }
 
@@ -176,7 +176,7 @@ resource "boundary_role" "okta_pie_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.pie_org_id
+  scope_id        = data.terraform_remote_state.boundary_demo_targets.outputs.pie_org_id
   grant_scope_ids = ["children"]
 }
 
@@ -198,7 +198,7 @@ resource "boundary_role" "okta_it_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id       = data.terraform_remote_state.boundary_demo_targets.outputs.it_org_id
+  scope_id        = data.terraform_remote_state.boundary_demo_targets.outputs.it_org_id
   grant_scope_ids = ["children"]
 }
 
@@ -212,6 +212,6 @@ resource "boundary_role" "list_aliases" {
     "ids=*;type=alias;actions=read",
     "type=alias;actions=list",
     "ids={{.User.Id}};type=user;actions=list-resolvable-aliases"
-    ]
-  scope_id      = "global"
+  ]
+  scope_id = "global"
 }

@@ -27,7 +27,7 @@ data "aws_ami" "aws_linux_hvm2" {
   }
 
   filter {
-    name  = "architecture"
+    name   = "architecture"
     values = ["x86_64"]
   }
 }

@@ -5,7 +5,7 @@ resource "vault_namespace" "it" {
 
 # Set up LDAP secret engine for AD
 resource "vault_ldap_secret_backend" "ad" {
-  namespace = vault_namespace.it.path_fq
+  namespace    = vault_namespace.it.path_fq
   path         = "boundary-ad"
   binddn       = "Administrator@Boundary.lab"
   bindpass     = var.admin_pass
@@ -16,7 +16,7 @@ resource "vault_ldap_secret_backend" "ad" {
 }
 
 resource "vault_ldap_secret_backend_dynamic_role" "domain_admin" {
-  namespace = vault_namespace.it.path_fq
+  namespace         = vault_namespace.it.path_fq
   mount             = vault_ldap_secret_backend.ad.path
   role_name         = "domain_admin"
   creation_ldif     = file("${path.module}/ldifs/admin_creation.ldif")
@@ -105,7 +105,7 @@ resource "boundary_credential_library_vault" "domain_admin" {
   name                = "domain_admin"
   description         = "AD Domain Admin Credentials"
   credential_store_id = boundary_credential_store_vault.it_vault.id
-  path                = "${vault_ldap_secret_backend.ad.path}/creds/${vault_ldap_secret_backend_dynamic_role.domain_admin.role_name}" 
+  path                = "${vault_ldap_secret_backend.ad.path}/creds/${vault_ldap_secret_backend_dynamic_role.domain_admin.role_name}"
   http_method         = "GET"
   credential_type     = "username_password"
 }
@@ -120,7 +120,7 @@ resource "boundary_target" "it-rdp-target-admin" {
   default_port             = 3389
   host_source_ids = [
     data.terraform_remote_state.boundary_demo_targets.outputs.it_host_set_id
-  ]  
+  ]
   egress_worker_filter = "\"${var.region}\" in \"/tags/region\""
   brokered_credential_source_ids = [
     boundary_credential_library_vault.domain_admin.id
@@ -128,9 +128,9 @@ resource "boundary_target" "it-rdp-target-admin" {
 }
 
 resource "boundary_alias_target" "it-rdp-target-admin-alias" {
-  name                      = "it-rdp-admin"
-  description               = "The alias for the IT RDP target with Vault supplied domain admin credentials"
-  scope_id                  = "global"
-  value                     = "rdp-admin.boundary.lab"
-  destination_id            = boundary_target.it-rdp-target-admin.id
+  name           = "it-rdp-admin"
+  description    = "The alias for the IT RDP target with Vault supplied domain admin credentials"
+  scope_id       = "global"
+  value          = "rdp-admin.boundary.lab"
+  destination_id = boundary_target.it-rdp-target-admin.id
 }

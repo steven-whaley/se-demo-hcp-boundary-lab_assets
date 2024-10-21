@@ -1,20 +1,20 @@
 variable "boundary_user" {
-  type = string
+  type    = string
   default = "admin"
 }
 
 variable "region" {
   type        = string
-  default = "us-west-2"
+  default     = "us-west-2"
   description = "The AWS region into which to deploy the HVN"
 }
 
 variable "public_key" {
-  type = string
+  type        = string
   description = "Public key to log into AWS instance"
 }
 
 variable "vault_license" {
-  type = string
+  type        = string
   description = "The License Key for Vault"
 }

@@ -53,6 +53,50 @@ data "cloudinit_config" "boundary_worker" {
   }
 }
 
+data "aws_iam_policy_document" "session_recording_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "session_recording_role" {
+  name               = "SessionRecordingRole"
+  assume_role_policy = data.aws_iam_policy_document.session_recording_assume_role.json
+}
+
+data "aws_iam_policy_document" "session_recording_policy" {
+  statement {
+    sid    = "S3Permissions"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:GetObjectAttributes",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
+    resources = ["${aws_s3_bucket.boundary_recording_bucket.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "session_recording_policy" {
+  name        = "SessionRecordingPolicy"
+  description = "Policy to allow session recording from worker"
+  policy      = data.aws_iam_policy_document.session_recording_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach_session_recording_policy" {
+  role       = aws_iam_role.session_recording_role.name
+  policy_arn = aws_iam_policy.session_recording_policy.arn
+}
+
 resource "aws_instance" "worker" {
   lifecycle {
     ignore_changes = [user_data_base64]
@@ -104,31 +148,31 @@ module "worker-sec-group" {
   egress_with_source_security_group_id = [
     {
       rule                     = "ssh-tcp"
-      description = "Allow SSH to SSH target"
+      description              = "Allow SSH to SSH target"
       source_security_group_id = module.k8s-sec-group.security_group_id
     },
     {
-      rule = "rdp-tcp"
-      description = "Allow RDP to RDP target"
+      rule                     = "rdp-tcp"
+      description              = "Allow RDP to RDP target"
       source_security_group_id = module.rdp-sec-group.security_group_id
     },
     {
       rule                     = "kubernetes-api-tcp"
-      description = "Allow K8s access on K8s target"
+      description              = "Allow K8s access on K8s target"
       source_security_group_id = module.k8s-sec-group.security_group_id
     },
     {
-      from_port = 30932
-      to_port = 30932
-      protocol = "tcp"
-      description = "Allow Postgres access on exposed port"
+      from_port                = 30932
+      to_port                  = 30932
+      protocol                 = "tcp"
+      description              = "Allow Postgres access on exposed port"
       source_security_group_id = module.k8s-sec-group.security_group_id
     },
     {
-      from_port = 30080
-      to_port = 30080
-      protocol = "tcp"
-      description = "Allow HTTP to WIki"
+      from_port                = 30080
+      to_port                  = 30080
+      protocol                 = "tcp"
+      description              = "Allow HTTP to WIki"
       source_security_group_id = module.k8s-sec-group.security_group_id
     }
   ]

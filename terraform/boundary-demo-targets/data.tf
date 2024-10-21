@@ -21,7 +21,7 @@ data "aws_ami" "aws_linux_hvm2" {
   }
 
   filter {
-    name  = "architecture"
+    name   = "architecture"
     values = ["x86_64"]
   }
 }
@@ -46,14 +46,14 @@ data "aws_ami" "windows" {
   }
 
   filter {
-    name  = "architecture"
+    name   = "architecture"
     values = ["x86_64"]
   }
 }
 
 data "terraform_remote_state" "boundary_demo_init" {
   backend = "local"
-  
+
   config = {
     path = "../boundary-demo-init/terraform.tfstate"
   }

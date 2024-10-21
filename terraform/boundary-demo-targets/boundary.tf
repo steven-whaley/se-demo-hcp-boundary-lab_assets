@@ -6,25 +6,25 @@ resource "time_sleep" "wait_60_sec" {
 #### LDAP Auth Method Setup
 # Create LDAP Auth Method
 resource "boundary_auth_method_ldap" "openldap" {
-  count = var.use_okta ? 0 : 1
+  count         = var.use_okta ? 0 : 1
   name          = "OpenLDAP"
-  scope_id      = "global"                               
-  urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.ldap_address}:1389"]           
-  user_dn       = "ou=users,dc=boundary,dc=lab"                    
-  user_attr     = "uid"                                  
-  group_dn      = "ou=users,dc=boundary,dc=lab"                   
-  bind_dn       = "cn=admin,dc=boundary,dc=lab" 
-  bind_password = data.terraform_remote_state.boundary_demo_init.outputs.ldap_password                         
-  state         = "active-public"                        
-  enable_groups = true                                   
+  scope_id      = "global"
+  urls          = ["ldap://${data.terraform_remote_state.boundary_demo_init.outputs.ldap_address}:1389"]
+  user_dn       = "ou=users,dc=boundary,dc=lab"
+  user_attr     = "uid"
+  group_dn      = "ou=users,dc=boundary,dc=lab"
+  bind_dn       = "cn=admin,dc=boundary,dc=lab"
+  bind_password = data.terraform_remote_state.boundary_demo_init.outputs.ldap_password
+  state         = "active-public"
+  enable_groups = true
   #discover_dn   = true
-  is_primary_for_scope = true                                   
+  is_primary_for_scope = true
 }
 
 # Create LDAP Managed Groups
 # PIE Group
 resource "boundary_managed_group_ldap" "pie_users" {
-  count = var.use_okta ? 0 : 1
+  count          = var.use_okta ? 0 : 1
   name           = "PIE Users"
   description    = "Boundary users with access PIE Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
@@ -32,7 +32,7 @@ resource "boundary_managed_group_ldap" "pie_users" {
 }
 
 resource "boundary_role" "ldap_pie_role" {
-  count = var.use_okta ? 0 : 1
+  count         = var.use_okta ? 0 : 1
   name          = "LDAP Users PIE Role"
   description   = "Role that grants access to all targets the PIE Org"
   principal_ids = [boundary_managed_group_ldap.pie_users[0].id]
@@ -43,13 +43,13 @@ resource "boundary_role" "ldap_pie_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = boundary_scope.pie_org.id
+  scope_id        = boundary_scope.pie_org.id
   grant_scope_ids = ["children"]
 }
 
 # DEV Group
 resource "boundary_managed_group_ldap" "dev_users" {
-  count = var.use_okta ? 0 : 1
+  count          = var.use_okta ? 0 : 1
   name           = "DEV Users"
   description    = "Boundary users with access DEV Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
@@ -57,7 +57,7 @@ resource "boundary_managed_group_ldap" "dev_users" {
 }
 
 resource "boundary_role" "ldap_dev_role" {
-  count = var.use_okta ? 0 : 1
+  count         = var.use_okta ? 0 : 1
   name          = "LDAP Users DEV Role"
   description   = "Role that grants access to all targets the DEV Org"
   principal_ids = [boundary_managed_group_ldap.dev_users[0].id]
@@ -68,13 +68,13 @@ resource "boundary_role" "ldap_dev_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = boundary_scope.dev_org.id
+  scope_id        = boundary_scope.dev_org.id
   grant_scope_ids = ["children"]
 }
 
 # IT Group
 resource "boundary_managed_group_ldap" "it_users" {
-  count = var.use_okta ? 0 : 1
+  count          = var.use_okta ? 0 : 1
   name           = "LDAP Users IT Role"
   description    = "Boundary users with access IT Org targets"
   auth_method_id = boundary_auth_method_ldap.openldap[0].id
@@ -82,7 +82,7 @@ resource "boundary_managed_group_ldap" "it_users" {
 }
 
 resource "boundary_role" "ldap_it_role" {
-  count = var.use_okta ? 0 : 1
+  count         = var.use_okta ? 0 : 1
   name          = "LDAP Users IT Role"
   description   = "Role that grants access to all targets the IT Org"
   principal_ids = [boundary_managed_group_ldap.it_users[0].id]
@@ -93,15 +93,15 @@ resource "boundary_role" "ldap_it_role" {
     "ids=*;type=host;actions=list,read",
     "ids=*;type=host-catalog;actions=list,read",
   ]
-  scope_id      = boundary_scope.it_org.id
+  scope_id        = boundary_scope.it_org.id
   grant_scope_ids = ["children"]
 }
 
 
 # Create the user to be used in Boundary for dynamic host discovery. Then attach the policy to the user.
 resource "aws_iam_user" "boundary_user" {
-  name                 = "instruqt-boundary-user"
-  force_destroy        = true
+  name          = "instruqt-boundary-user"
+  force_destroy = true
 }
 
 resource "aws_iam_policy" "boundary_policy" {
@@ -175,11 +175,11 @@ resource "boundary_target" "pie-k8s-vault-target" {
 }
 
 resource "boundary_alias_target" "pie-k8s-vault-target-alias" {
-  name                      = "pie-k8s-vault"
-  description               = "The alias for the PIE k8s cluster with Vault credentials"
-  scope_id                  = "global"
-  value                     = "k8s-vault.boundary.lab"
-  destination_id            = boundary_target.pie-k8s-vault-target.id
+  name           = "pie-k8s-vault"
+  description    = "The alias for the PIE k8s cluster with Vault credentials"
+  scope_id       = "global"
+  value          = "k8s-vault.boundary.lab"
+  destination_id = boundary_target.pie-k8s-vault-target.id
 }
 
 resource "boundary_target" "pie-k8s-target" {
@@ -194,19 +194,19 @@ resource "boundary_target" "pie-k8s-target" {
 }
 
 resource "boundary_alias_target" "pie-k8s-target-alias" {
-  name                      = "pie-k8s"
-  description               = "The alias for the PIE k8s cluster with user credentials"
-  scope_id                  = "global"
-  value                     = "k8s.boundary.lab"
-  destination_id            = boundary_target.pie-k8s-target.id
+  name           = "pie-k8s"
+  description    = "The alias for the PIE k8s cluster with user credentials"
+  scope_id       = "global"
+  value          = "k8s.boundary.lab"
+  destination_id = boundary_target.pie-k8s-target.id
 }
 
 resource "boundary_alias_target" "pie-k8s-svcname-target-alias" {
-  name                      = "pie-k8s-svcname"
-  description               = "The alias for the PIE k8s cluster with user credentials, for use with transparent sessions"
-  scope_id                  = "global"
-  value                     = "kubernetes.default.svc"
-  destination_id            = boundary_target.pie-k8s-target.id
+  name           = "pie-k8s-svcname"
+  description    = "The alias for the PIE k8s cluster with user credentials, for use with transparent sessions"
+  scope_id       = "global"
+  value          = "kubernetes.default.svc"
+  destination_id = boundary_target.pie-k8s-target.id
 }
 
 resource "boundary_target" "pie-ssh-target" {
@@ -221,11 +221,11 @@ resource "boundary_target" "pie-ssh-target" {
 }
 
 resource "boundary_alias_target" "pie-ssh-target-alias" {
-  name                      = "pie-ssh"
-  description               = "The alias for the PIE SSH server with user supplied keys"
-  scope_id                  = "global"
-  value                     = "ssh.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-target.id
+  name           = "pie-ssh"
+  description    = "The alias for the PIE SSH server with user supplied keys"
+  scope_id       = "global"
+  value          = "ssh.boundary.lab"
+  destination_id = boundary_target.pie-ssh-target.id
 }
 
 resource "boundary_target" "pie-worker-ssh-target" {
@@ -240,11 +240,11 @@ resource "boundary_target" "pie-worker-ssh-target" {
 }
 
 resource "boundary_alias_target" "pie-worker-ssh-target-alias" {
-  name                      = "pie-worker-ssh"
-  description               = "The alias for the Boundary worker with user supplied keys"
-  scope_id                  = "global"
-  value                     = "worker.boundary.lab"
-  destination_id            = boundary_target.pie-worker-ssh-target.id
+  name           = "pie-worker-ssh"
+  description    = "The alias for the Boundary worker with user supplied keys"
+  scope_id       = "global"
+  value          = "worker.boundary.lab"
+  destination_id = boundary_target.pie-worker-ssh-target.id
 }
 
 resource "boundary_target" "pie-ssh-cert-target" {
@@ -254,21 +254,21 @@ resource "boundary_target" "pie-ssh-cert-target" {
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
-  address = aws_instance.k8s_cluster.private_ip
+  address                  = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
     boundary_credential_library_vault_ssh_certificate.ssh_cert.id
   ]
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
- enable_session_recording = true
- storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
+  enable_session_recording = true
+  storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
 }
 
 resource "boundary_alias_target" "pie-ssh-cert-target-alias" {
-  name                      = "pie-ssh-user"
-  description               = "The alias for the PIE SSH target with user templated SSH certificate"
-  scope_id                  = "global"
-  value                     = "ssh-user.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target.id
+  name           = "pie-ssh-user"
+  description    = "The alias for the PIE SSH target with user templated SSH certificate"
+  scope_id       = "global"
+  value          = "ssh-user.boundary.lab"
+  destination_id = boundary_target.pie-ssh-cert-target.id
 }
 
 resource "boundary_target" "pie-ssh-cert-target-admin" {
@@ -278,21 +278,21 @@ resource "boundary_target" "pie-ssh-cert-target-admin" {
   scope_id                 = boundary_scope.pie_aws_project.id
   session_connection_limit = -1
   default_port             = 22
-  address = aws_instance.k8s_cluster.private_ip
+  address                  = aws_instance.k8s_cluster.private_ip
   injected_application_credential_source_ids = [
     boundary_credential_library_vault_ssh_certificate.ssh_cert_admin.id
   ]
   egress_worker_filter     = "\"${var.region}\" in \"/tags/region\""
- enable_session_recording = true
- storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
+  enable_session_recording = true
+  storage_bucket_id        = boundary_storage_bucket.pie_session_recording_bucket.id
 }
 
 resource "boundary_alias_target" "pie-ssh-cert-target-admin-alias" {
-  name                      = "pie-ssh-admin"
-  description               = "The alias for the PIE SSH target with user templated SSH certificate"
-  scope_id                  = "global"
-  value                     = "ssh-admin.boundary.lab"
-  destination_id            = boundary_target.pie-ssh-cert-target-admin.id
+  name           = "pie-ssh-admin"
+  description    = "The alias for the PIE SSH target with user templated SSH certificate"
+  scope_id       = "global"
+  value          = "ssh-admin.boundary.lab"
+  destination_id = boundary_target.pie-ssh-cert-target-admin.id
 }
 
 # Create PIE Vault Credential Store
@@ -310,9 +310,9 @@ resource "boundary_credential_library_vault" "k8s-admin-role" {
   name                = "K8s Admin Role"
   description         = "K8s Credential Admin Role Token"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
-  path                = "kubernetes/creds/cluster-admin-role" 
+  path                = "kubernetes/creds/cluster-admin-role"
   http_method         = "POST"
-  http_request_body = <<EOT
+  http_request_body   = <<EOT
   {
     "kubernetes_namespace": "default"
   }
@@ -353,7 +353,7 @@ resource "boundary_credential_library_vault" "k8s-cert" {
   name                = "K8s Cert"
   description         = "K8s CA Certificate"
   credential_store_id = boundary_credential_store_vault.pie_vault.id
-  path                = "secrets/data/k8s-cluster" 
+  path                = "secrets/data/k8s-cluster"
   http_method         = "get"
 }
 
@@ -394,11 +394,11 @@ resource "boundary_target" "dev-db-target" {
 }
 
 resource "boundary_alias_target" "dev-db-target-alias" {
-  name                      = "dev-db"
-  description               = "The alias for the Dev database with Vault credentials"
-  scope_id                  = "global"
-  value                     = "db.boundary.lab"
-  destination_id            = boundary_target.dev-db-target.id
+  name           = "dev-db"
+  description    = "The alias for the Dev database with Vault credentials"
+  scope_id       = "global"
+  value          = "db.boundary.lab"
+  destination_id = boundary_target.dev-db-target.id
 }
 
 # Create Dev Vault Credential store
@@ -416,7 +416,7 @@ resource "boundary_credential_library_vault" "database" {
   name                = "database"
   description         = "Postgres DB Credential Library"
   credential_store_id = boundary_credential_store_vault.dev_vault.id
-  path                = "database/static-creds/dev_role" 
+  path                = "database/static-creds/dev_role"
   http_method         = "GET"
   credential_type     = "username_password"
 }
@@ -433,11 +433,11 @@ resource "boundary_target" "dev-github-target" {
 }
 
 resource "boundary_alias_target" "dev-github-target-alias" {
-  name                      = "dev-github"
-  description               = "The alias for the connecting to GitHub.com through Boundary"
-  scope_id                  = "global"
-  value                     = "github.com"
-  destination_id            = boundary_target.dev-github-target.id
+  name           = "dev-github"
+  description    = "The alias for the connecting to GitHub.com through Boundary"
+  scope_id       = "global"
+  value          = "github.com"
+  destination_id = boundary_target.dev-github-target.id
 }
 
 ##### IT Org Resources #####
@@ -510,11 +510,11 @@ resource "boundary_target" "it-rdp-target" {
 }
 
 resource "boundary_alias_target" "it-rdp-target-alias" {
-  name                      = "it-rdp"
-  description               = "The alias for the IT RDP target with user supplied credentials"
-  scope_id                  = "global"
-  value                     = "rdp.boundary.lab"
-  destination_id            = boundary_target.it-rdp-target.id
+  name           = "it-rdp"
+  description    = "The alias for the IT RDP target with user supplied credentials"
+  scope_id       = "global"
+  value          = "rdp.boundary.lab"
+  destination_id = boundary_target.it-rdp-target.id
 }
 
 # Create the Web Target in the IT AWS Project
@@ -531,23 +531,23 @@ resource "boundary_target" "it-wiki-target" {
 }
 
 resource "boundary_alias_target" "it-wiki-target-alias" {
-  name                      = "it-wiki"
-  description               = "The alias for the internal wiki web site"
-  scope_id                  = "global"
-  value                     = "wiki.boundary.lab"
-  destination_id            = boundary_target.it-wiki-target.id
+  name           = "it-wiki"
+  description    = "The alias for the internal wiki web site"
+  scope_id       = "global"
+  value          = "wiki.boundary.lab"
+  destination_id = boundary_target.it-wiki-target.id
 }
 
 # Create Session Recording Bucket
 # Delay creation to give the worker time to register
 
 resource "time_sleep" "worker_timer" {
-  depends_on = [aws_instance.worker]
+  depends_on      = [aws_instance.worker]
   create_duration = "120s"
 }
 
 resource "random_string" "bucket_string" {
-  length = 4
+  length  = 4
   special = false
 }
 
@@ -573,7 +573,7 @@ resource "boundary_storage_bucket" "pie_session_recording_bucket" {
 
 # Set up Permissions to list aliases
 resource "boundary_role" "list_aliases" {
-  count = var.use_okta ? 0 : 1
+  count         = var.use_okta ? 0 : 1
   name          = "list_aliases"
   description   = "Role to allow listing aliases"
   principal_ids = [boundary_managed_group_ldap.pie_users[0].id, boundary_managed_group_ldap.dev_users[0].id, boundary_managed_group_ldap.it_users[0].id]
@@ -583,5 +583,5 @@ resource "boundary_role" "list_aliases" {
     "type=alias;actions=list",
     "ids={{.User.Id}};type=user;actions=list-resolvable-aliases"
   ]
-  scope_id      = "global"
+  scope_id = "global"
 }

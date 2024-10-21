@@ -2,12 +2,12 @@ resource "random_pet" "pet_name" {
 }
 
 resource "random_string" "admin_password" {
-  length           = 8
-  special          = false
+  length  = 8
+  special = false
 }
 
 resource "random_string" "ldap_pass" {
-  length = 8
+  length  = 8
   special = false
 }
 
@@ -33,7 +33,7 @@ resource "random_string" "vault_pass" {
 
 #Create AWS Public key pair
 resource "aws_key_pair" "vault_key" {
-  key_name = "vault-key"
+  key_name   = "vault-key"
   public_key = var.public_key
 }
 
@@ -45,12 +45,12 @@ module "boundary-demo-vpc" {
   name = "boundary-demo-vpc"
   cidr = "10.1.0.0/16"
 
-  azs  = slice(data.aws_availability_zones.available.names, 0, 2)
+  azs             = slice(data.aws_availability_zones.available.names, 0, 2)
   private_subnets = ["10.1.1.0/24", "10.1.2.0/24"]
   public_subnets  = ["10.1.11.0/24", "10.1.12.0/24"]
 
-  enable_nat_gateway = true
-  enable_vpn_gateway = false
+  enable_nat_gateway   = true
+  enable_vpn_gateway   = false
   enable_dns_hostnames = true
 }
 
@@ -106,7 +106,7 @@ resource "aws_instance" "vault-server" {
   subnet_id                   = module.boundary-demo-vpc.public_subnets[0]
   associate_public_ip_address = true
   vpc_security_group_ids      = [module.vault-security-group.security_group_id]
-  user_data            = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license=var.vault_license, ldap_pass=random_string.ldap_pass.id })
+  user_data                   = templatefile("${path.module}/vault_user_data.tftpl", { vaultpass = random_string.vault_pass.id, vault_license = var.vault_license, ldap_pass = random_string.ldap_pass.id })
   tags = {
     Name = "vault-demo"
   }

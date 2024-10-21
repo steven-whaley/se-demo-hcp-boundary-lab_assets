@@ -11,8 +11,8 @@ resource "aws_iam_instance_profile" "ssm_write_profile" {
 
 data "aws_iam_policy_document" "ssm_write_policy" {
   statement {
-    effect = "Allow"
-    actions = ["ssm:PutParameter"]
+    effect    = "Allow"
+    actions   = ["ssm:PutParameter"]
     resources = ["*"]
   }
 }
@@ -24,7 +24,7 @@ resource "aws_iam_policy" "ssm_policy" {
 }
 
 resource "aws_iam_role" "ssm_write_role" {
-  
+
   name = "ssm_write_role"
   path = "/"
 
@@ -49,8 +49,8 @@ EOF
 }
 
 resource "aws_iam_policy_attachment" "ssm_write_policy" {
-  name = "boundary-demo-ssm-policy-attachment"
-  roles = [aws_iam_role.ssm_write_role.name]
+  name       = "boundary-demo-ssm-policy-attachment"
+  roles      = [aws_iam_role.ssm_write_role.name]
   policy_arn = aws_iam_policy.ssm_policy.arn
 }
 
@@ -58,7 +58,7 @@ resource "aws_iam_policy_attachment" "ssm_write_policy" {
 
 resource "aws_ssm_parameter" "cert" {
   lifecycle {
-    ignore_changes = [ value ]
+    ignore_changes = [value]
   }
   name  = "cert"
   type  = "String"
@@ -67,7 +67,7 @@ resource "aws_ssm_parameter" "cert" {
 
 resource "aws_ssm_parameter" "token" {
   lifecycle {
-    ignore_changes = [ value ]
+    ignore_changes = [value]
   }
   name  = "token"
   type  = "String"
