@@ -76,11 +76,7 @@ data "aws_iam_policy_document" "session_recording_policy" {
     sid    = "S3Permissions"
     effect = "Allow"
     actions = [
-      "s3:PutObject",
-      "s3:GetObject",
-      "s3:GetObjectAttributes",
-      "s3:DeleteObject",
-      "s3:ListBucket"
+      "*"
     ]
     # resources = ["${aws_s3_bucket.boundary_recording_bucket.arn}/*"]
     resources = ["*"]
