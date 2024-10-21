@@ -561,13 +561,13 @@ resource "boundary_storage_bucket" "pie_session_recording_bucket" {
   bucket_name = aws_s3_bucket.boundary_recording_bucket.id
   attributes_json = jsonencode({
     "region"                    = var.region,
-    disable_credential_rotation = true
+    # disable_credential_rotation = true
   })
 
-  secrets_json = jsonencode({
-    "access_key_id"     = aws_iam_access_key.boundary_user.id,
-    "secret_access_key" = aws_iam_access_key.boundary_user.secret
-  })
+  # secrets_json = jsonencode({
+  #   "access_key_id"     = aws_iam_access_key.boundary_user.id,
+  #   "secret_access_key" = aws_iam_access_key.boundary_user.secret
+  # })
   worker_filter = "\"${var.region}\" in \"/tags/region\""
 }
 
