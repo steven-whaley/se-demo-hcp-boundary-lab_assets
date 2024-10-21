@@ -97,6 +97,11 @@ resource "aws_iam_role_policy_attachment" "attach_session_recording_policy" {
   policy_arn = aws_iam_policy.session_recording_policy.arn
 }
 
+resource "aws_iam_instance_profile" "session_recording_profile" {
+  name = "SessionRecordingProfile"
+  role = aws_iam_role.session_recording_role.name
+}
+
 resource "aws_instance" "worker" {
   lifecycle {
     ignore_changes = [user_data_base64]
@@ -121,6 +126,7 @@ resource "aws_instance" "worker" {
   vpc_security_group_ids      = [module.worker-sec-group.security_group_id]
   user_data_base64            = data.cloudinit_config.boundary_worker.rendered
   user_data_replace_on_change = false
+  iam_instance_profile        = aws_iam_instance_profile.session_recording_profile.name
 
   tags = {
     Name = "boundary-worker-${random_uuid.worker_uuid.result}"
