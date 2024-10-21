@@ -82,7 +82,8 @@ data "aws_iam_policy_document" "session_recording_policy" {
       "s3:DeleteObject",
       "s3:ListBucket"
     ]
-    resources = ["${aws_s3_bucket.boundary_recording_bucket.arn}/*"]
+    # resources = ["${aws_s3_bucket.boundary_recording_bucket.arn}/*"]
+    resources = ["*"]
   }
 }
 
