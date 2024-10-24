@@ -22,6 +22,7 @@ locals {
         type = "public_instance"
         cloud = "aws"
         region = "${var.region}"
+        session_recording = "true"
       }
     }
     WORKER_CONFIG
