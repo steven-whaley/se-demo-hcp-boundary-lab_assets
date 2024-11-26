@@ -11,7 +11,7 @@ resource "aws_instance" "k8s_cluster" {
   associate_public_ip_address = false
   ami                         = data.aws_ami.aws_linux_hvm2.id
   subnet_id                   = data.terraform_remote_state.boundary_demo_init.outputs.priv_subnet_id
-  instance_type               = "t3.small"
+  instance_type               = "t3.medium"
   vpc_security_group_ids      = [module.k8s-sec-group.security_group_id]
   key_name                    = aws_key_pair.boundary_ec2_keys.key_name
   iam_instance_profile        = aws_iam_instance_profile.ssm_write_profile.name
