@@ -15,12 +15,19 @@ resource "aws_instance" "k8s_cluster" {
   vpc_security_group_ids      = [module.k8s-sec-group.security_group_id]
   key_name                    = aws_key_pair.boundary_ec2_keys.key_name
   iam_instance_profile        = aws_iam_instance_profile.ssm_write_profile.name
+  
+  root_block_device {
+    volume_size = "10"
+    volume_type = "gp3"
+  }
+  
   user_data = templatefile("./template_files/k8s-cloudinit.tftpl", {
     password        = random_password.db_password.result,
     vault_namespace = vault_namespace.pie.path_fq
     vault_url       = data.terraform_remote_state.boundary_demo_init.outputs.vault_priv_url
     vault_ssh_mount = vault_mount.ssh.path
   })
+  
   tags = {
     Name   = "k8s-cluster"
     app    = "kubernetes"
