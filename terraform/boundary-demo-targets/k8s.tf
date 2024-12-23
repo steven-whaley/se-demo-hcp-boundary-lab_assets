@@ -17,7 +17,7 @@ resource "aws_instance" "k8s_cluster" {
   iam_instance_profile = aws_iam_instance_profile.ssm_write_profile.name
   
   root_block_device {
-    volume_size = "10"
+    volume_size = "30"
     volume_type = "gp3"
   }
 
