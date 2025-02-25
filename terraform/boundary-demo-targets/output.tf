@@ -13,6 +13,11 @@ output "dc_ip_address" {
   value       = aws_instance.rdp-target.private_ip
 }
 
+output "bastion_ip_address" {
+  description = "The Bastion IP address"
+  value       = aws_instance.bastion.private_ip
+}
+
 output "pie_org_id" {
   description = "The ORG ID of the PIE Project"
   value       = boundary_scope.pie_org.id
