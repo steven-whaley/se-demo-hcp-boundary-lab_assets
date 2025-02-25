@@ -2,12 +2,6 @@ resource "aws_instance" "bastion" {
   ami           = data.aws_ami.aws_linux_hvm2.id
   instance_type = "t3.micro"
 
-  ebs_block_device {
-    volume_type = "gp2"
-    volume_size = "10"
-    device_name = "/dev/sdf"
-  }
-
   key_name                    = aws_key_pair.boundary_ec2_keys.key_name
   monitoring                  = true
   subnet_id                   = data.terraform_remote_state.boundary_demo_init.outputs.pub_subnet_id
