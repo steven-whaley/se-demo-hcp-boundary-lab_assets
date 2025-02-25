@@ -42,6 +42,11 @@ output "priv_subnet_id" {
   value       = module.boundary-demo-vpc.private_subnets[0]
 }
 
+output "pub_subnet_id" {
+  description = "The ID of the first private subnet"
+  value       = module.boundary-demo-vpc.public_subnets[0]
+}
+
 output "vault_sec_group" {
   description = "The Security Group ID for the Vault Server"
   value       = module.vault-security-group.security_group_id
