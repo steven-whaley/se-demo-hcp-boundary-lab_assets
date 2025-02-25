@@ -15,7 +15,7 @@ output "dc_ip_address" {
 
 output "bastion_ip_address" {
   description = "The Bastion IP address"
-  value       = aws_instance.bastion.private_ip
+  value       = aws_instance.bastion.public_ip
 }
 
 output "pie_org_id" {
