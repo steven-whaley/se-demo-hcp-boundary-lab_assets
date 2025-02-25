@@ -12,6 +12,7 @@ resource "aws_instance" "bastion" {
   monitoring                  = true
   subnet_id                   = data.terraform_remote_state.boundary_demo_init.outputs.pub_subnet_id
   vpc_security_group_ids      = [module.bastion-sec-group.security_group_id]
+  associate_public_ip_address = true
 }
 
 #Create worker EC2 security group
@@ -21,6 +22,7 @@ module "bastion-sec-group" {
 
   name   = "boundary-bastion-sec-group"
   vpc_id = data.terraform_remote_state.boundary_demo_init.outputs.vpc_id
+  
   
   egress_with_source_security_group_id = [
     {
