@@ -90,6 +90,14 @@ module "worker-sec-group" {
 
   name   = "boundary-worker-sec-group"
   vpc_id = data.terraform_remote_state.boundary_demo_init.outputs.vpc_id
+  
+  ingress_with_source_security_group_id = [
+    {
+      rule = "ssh-tcp"
+      source_security_group_id = module.bastion-sec-group.security_group_id
+    }
+  ]
+
 
   egress_with_cidr_blocks = [
     {
