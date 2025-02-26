@@ -40,7 +40,7 @@ locals {
       ["yum", "update", "-y"],
       ["yum", "install", "-y", "docker"],
       ["systemctl", "start", "docker"],
-      ["docker", "run", "-p", "9202:9202", "-v", "/run/boundary:/boundary/", "hashicorp/boundary-enterprise", "boundary", "server", "-config", "/boundary/config.hcl"]
+      ["docker", "run", "-p", "9202:9202","--cap-add", "IPC_LOCK", "-v", "/run/boundary:/boundary/", "hashicorp/boundary-enterprise", "boundary", "server", "-config", "/boundary/config.hcl"]
     ]
   }
 }
@@ -110,7 +110,7 @@ resource "aws_instance" "worker" {
   ]
 
   ami           = data.aws_ami.aws_linux_hvm2.id
-  instance_type = "t3.micro"
+  instance_type = "t3.small"
   
   root_block_device {
     volume_size = "30"
