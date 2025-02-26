@@ -40,7 +40,7 @@ locals {
       ["yum", "update", "-y"],
       ["yum", "install", "-y", "docker"],
       ["systemctl", "start", "docker"],
-      ["docker", "run", "-p", "9202:9202","--cap-add", "IPC_LOCK", "-v", "/run/boundary:/boundary/", "hashicorp/boundary-enterprise", "boundary", "server", "-config", "/boundary/config.hcl"]
+      ["docker", "run", "-p", "9202:9202", "-v", "/run/boundary:/boundary/", "hashicorp/boundary-enterprise", "boundary", "server", "-config", "/boundary/config.hcl"]
     ]
   }
 }
