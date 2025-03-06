@@ -27,6 +27,10 @@ output "hcp_project_id" {
   value = hcp_project.project.resource_id
 }
 
+output "hcp_org_id" {
+  value = data.hcp_organization.org.resource_id
+}
+
 output "vault_password" {
   description = "The vault terraform user password"
   value       = random_string.vault_pass.id
