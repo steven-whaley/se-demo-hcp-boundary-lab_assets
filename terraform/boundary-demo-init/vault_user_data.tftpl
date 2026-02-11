@@ -106,6 +106,7 @@ sudo mkdir --parents /etc/vault.d
 # Add Vault config file
 cat <<EOF > /etc/vault.d/vault.hcl
 ui = true
+disable_mlock = false
 
 listener "tcp" {
  address     = "0.0.0.0:8200"
