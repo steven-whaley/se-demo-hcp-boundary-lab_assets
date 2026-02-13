@@ -39,7 +39,7 @@ resource "okta_user" "global_user" {
   last_name                 = "User"
   login                     = "global_user@boundary.lab"
   email                     = "global_user@dev.null"
-  password                  = random_pet.okta_string.id
+  password                  = random_string.okta_password.id
   expire_password_on_create = false
 }
 
@@ -48,7 +48,7 @@ resource "okta_user" "pie_user" {
   last_name                 = "User"
   login                     = "pie_user@boundary.lab"
   email                     = "pie_user@dev.null"
-  password                  = random_pet.okta_string.id
+  password                  = random_string.okta_password.id
   expire_password_on_create = false
 }
 
@@ -72,7 +72,7 @@ resource "okta_user" "dev_user" {
   last_name                 = "User"
   login                     = "dev_user@boundary.lab"
   email                     = "dev_user@dev.null"
-  password                  = random_pet.okta_string.id
+  password                  = random_string.okta_password.id
   expire_password_on_create = false
 }
 
@@ -96,7 +96,7 @@ resource "okta_user" "it_user" {
   last_name                 = "User"
   login                     = "it_user@boundary.lab"
   email                     = "it_user@dev.null"
-  password                  = random_pet.okta_string.id
+  password                  = random_string.okta_password.id
   expire_password_on_create = false
 }
 
