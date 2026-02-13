@@ -110,7 +110,8 @@ if [ $? -eq 0 ]; then
   touch ${HOME}/.init-success
 fi
 
-sleep 60
+echo "Sleeping for 120 seconds to let Vault setup complete"
+sleep 120
 
 cd ${TF_BASE}/boundary-demo-targets
 terraform init
