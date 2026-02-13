@@ -110,6 +110,8 @@ if [ $? -eq 0 ]; then
   touch ${HOME}/.init-success
 fi
 
+sleep 60
+
 cd ${TF_BASE}/boundary-demo-targets
 terraform init
 terraform apply -auto-approve
