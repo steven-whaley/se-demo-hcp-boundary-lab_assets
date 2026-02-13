@@ -8,8 +8,11 @@ locals {
   callback_url        = format("%s%s", data.terraform_remote_state.boundary_demo_init.outputs.boundary_url, "/v1/auth-methods/oidc:authenticate:callback")
 }
 
-resource "random_pet" "okta_password" {
-  length = 2
+resource "random_string" "okta_password" {
+  length = 8
+  min_lower = 1
+  min_upper = 1
+  min_numeric = 1
 }
 
 # Create the Okta OAuth App for Boundary
