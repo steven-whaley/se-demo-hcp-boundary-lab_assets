@@ -93,7 +93,7 @@ member: cn=it_user,ou=users,dc=boundary,dc=lab
 member: cn=global_user,ou=users,dc=boundary,dc=lab
 EOF
 
-sleep 3
+sleep 5
 
 ldapmodify -x -h 127.0.0.1 -p 1389 -D cn=admin,dc=boundary,dc=lab -w ${ldap_pass} -f /tmp/users.ldif
 
@@ -173,7 +173,7 @@ export VAULT_ADDR='http://127.0.0.1:8200'
 # enable and start the vault server
 sudo systemctl enable vault
 sudo systemctl start vault
-sleep 10 
+sleep 20 
 
 # Unseal Vault 
 
