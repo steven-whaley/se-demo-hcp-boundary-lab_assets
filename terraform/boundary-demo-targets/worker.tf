@@ -40,6 +40,7 @@ locals {
       ["yum", "update", "-y"],
       ["yum", "install", "-y", "docker"],
       ["systemctl", "start", "docker"],
+      ["chown", "100:100", "/run/boundary"],
       ["docker", "run", "-p", "9202:9202", "-v", "/run/boundary:/boundary/", "hashicorp/boundary-enterprise", "boundary", "server", "-config", "/boundary/config.hcl"]
     ]
   }
